@@ -1,0 +1,877 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Thyroid I-131 Activity Planner</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,400;6..72,500;6..72,600&family=Inter:wght@400;450;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+ --bg:#F6F7F9; --card:#FFFFFF; --ink:#14171B; --soft:#565E68; --faint:#8D949C;
+ --line:#E2E5E9; --line2:#EFF1F3;
+ --ac:#4A3A82; --ac-t:#F0EEF7; --ac-l:#C4BADF;
+ --A:#0B6B52; --A-t:#E6F2EE; --B:#1A5480; --B-t:#E6EFF6; --C:#69727C; --C-t:#EFF1F3;
+ --stop:#9E3417; --stop-t:#FAEBE5; --cap:#8A6009; --cap-t:#FAF2DE;
+ --m:'JetBrains Mono',ui-monospace,monospace; --s:'Newsreader',Georgia,serif; --b:'Inter',system-ui,sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--b);font-size:14px;line-height:1.55;-webkit-font-smoothing:antialiased}
+.app{max-width:1420px;margin:0 auto;display:grid;grid-template-columns:300px 1fr;gap:0;min-height:100vh}
+@media(max-width:1000px){.app{grid-template-columns:1fr}}
+
+/* ---------- rail ---------- */
+.rail{background:var(--card);border-right:1px solid var(--line);padding:26px 22px 60px}
+.brand{padding-bottom:18px;border-bottom:1px solid var(--line);margin-bottom:20px}
+.brand .k{font-family:var(--m);font-size:9.5px;letter-spacing:.19em;text-transform:uppercase;color:var(--ac);font-weight:700}
+.brand h1{font-family:var(--s);font-size:23px;font-weight:600;letter-spacing:-.01em;margin-top:5px;line-height:1.15}
+.g{margin-bottom:17px}
+.g>label{display:block;font-size:10.5px;font-family:var(--m);letter-spacing:.11em;text-transform:uppercase;
+ color:var(--faint);font-weight:700;margin-bottom:6px}
+.seg,.stk{background:#F2F3F5;padding:3px;border-radius:5px;gap:3px;display:flex}
+.seg{flex-wrap:wrap}.stk{flex-direction:column}
+.seg button,.stk button{flex:1 1 auto;padding:7px 8px;border:0;background:transparent;color:var(--soft);
+ font-family:var(--b);font-size:12px;font-weight:450;border-radius:3px;cursor:pointer;transition:all .12s;text-align:center}
+.stk button{text-align:left;flex:none;line-height:1.35}
+.seg button:hover,.stk button:hover{background:#E7E9EC;color:var(--ink)}
+.seg button[aria-pressed=true],.stk button[aria-pressed=true]{background:var(--ac);color:#fff;font-weight:600;
+ box-shadow:0 1px 3px rgba(74,58,130,.28)}
+.seg button:focus-visible,.stk button:focus-visible{outline:2px solid var(--ink);outline-offset:1px}
+.nm{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.nm label{display:block;font-family:var(--m);font-size:9.5px;letter-spacing:.07em;text-transform:uppercase;
+ color:var(--faint);font-weight:700;margin-bottom:4px}
+.nm input{width:100%;padding:7px 9px;border:1px solid var(--line);border-radius:4px;
+ font-family:var(--m);font-size:12.5px;background:#FCFCFD}
+.nm input:focus{outline:2px solid var(--ac);outline-offset:-1px;background:#fff}
+.tg{display:flex;align-items:flex-start;gap:9px;padding:7px 8px;border-radius:4px;cursor:pointer;
+ font-size:12px;line-height:1.4;transition:background .12s}
+.tg:hover{background:#F2F3F5}
+.tg input{accent-color:var(--ac);width:14px;height:14px;margin:2px 0 0;flex-shrink:0}
+.hidden-note{font-size:11px;color:var(--faint);padding:9px 10px;background:#F9FAFB;border:1px dashed var(--line);
+ border-radius:4px;margin-bottom:14px;line-height:1.45}
+.hidden-note button{background:none;border:0;color:var(--ac);font-weight:600;cursor:pointer;
+ font-size:11px;text-decoration:underline;padding:0;font-family:var(--b)}
+.rst{margin-top:6px;width:100%;padding:8px;background:transparent;border:1px solid var(--line);color:var(--faint);
+ font-family:var(--m);font-size:10px;letter-spacing:.1em;text-transform:uppercase;border-radius:4px;cursor:pointer}
+.rst:hover{border-color:var(--faint);color:var(--soft)}
+
+/* ---------- main ---------- */
+.main{padding:26px 30px 70px;min-width:0}
+@media(max-width:1000px){.main{padding:22px 18px 50px}.rail{border-right:0;border-bottom:1px solid var(--line)}}
+h2{font-family:var(--m);font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:var(--faint);
+ font-weight:700;margin:26px 0 10px}
+h2:first-child{margin-top:0}
+.card{background:var(--card);border:1px solid var(--line);border-radius:7px}
+
+.tierbar{display:flex;align-items:center;gap:20px;padding:16px 20px;flex-wrap:wrap}
+.tierbar .lb{font-family:var(--m);font-size:9.5px;letter-spacing:.13em;text-transform:uppercase;color:var(--faint);font-weight:700}
+.tierbar .vl{font-family:var(--s);font-size:21px;font-weight:600;letter-spacing:-.01em}
+.tierbar .dv{flex:1;min-width:250px;font-size:12.5px;color:var(--soft);line-height:1.5}
+
+.blk{border-radius:6px;padding:13px 16px;margin-bottom:7px;font-size:12.8px;line-height:1.55}
+.blk b{font-family:var(--s);font-size:14.5px;font-weight:600;display:block;margin-bottom:4px}
+.blk.stop{background:var(--stop-t);border:1px solid #EBC6B7}.blk.stop b{color:var(--stop)}
+.blk.cap{background:var(--cap-t);border:1px solid #E9D5A6}.blk.cap b{color:var(--cap)}
+.blk.note{background:var(--card);border:1px solid var(--line)}
+.blk p{margin:0 0 8px}.blk p:last-of-type{margin-bottom:0}
+
+.rung{background:var(--card);border:1px solid var(--line);border-radius:6px;margin-bottom:6px;overflow:hidden;transition:opacity .15s}
+.rung.on{border-color:#A9CFC0;box-shadow:0 0 0 2px var(--A-t)}
+.rung.dim{opacity:.62}
+.rung.alt{border-color:#B9D2EA;box-shadow:0 0 0 2px #EAF1FA}
+.rh{display:flex;align-items:center;gap:13px;padding:12px 16px;cursor:pointer;user-select:none}
+.rh:hover{background:#FAFBFC}
+.rd{font-family:var(--m);font-size:18px;font-weight:700;min-width:92px;letter-spacing:-.02em}
+.rd small{font-size:10px;font-weight:400;color:var(--faint);letter-spacing:0}
+.chip{font-family:var(--m);font-size:8.5px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;
+ padding:4px 8px;border-radius:3px;flex-shrink:0}
+.c-rec{background:var(--A-t);color:var(--A)} .c-sup{background:var(--B-t);color:var(--B)}
+.c-no{background:var(--C-t);color:var(--C)} .c-con{background:var(--stop-t);color:var(--stop)}
+.c-alt{background:#EAF1FA;color:#215D91;box-shadow:inset 0 0 0 1px #B9D2EA}
+.c-ceil{background:var(--cap-t);color:var(--cap)}
+.rt{font-size:12.5px;color:var(--soft);flex:1;line-height:1.45}
+.rx{font-family:var(--m);font-size:13px;color:var(--faint);transition:transform .18s}
+.rung.open .rx{transform:rotate(90deg)}
+.rb{display:none;padding:0 16px 15px;border-top:1px solid var(--line2)}
+.rung.open .rb{display:block}
+.rb p{margin:11px 0 0;font-size:13px;line-height:1.6}
+
+.cites{margin-top:11px;padding-top:10px;border-top:1px dashed var(--line)}
+.ct{display:flex;gap:9px;align-items:flex-start;margin-bottom:6px;font-size:11.5px;line-height:1.45}
+.gr{font-family:var(--m);font-size:8.5px;font-weight:700;padding:2px 5px;border-radius:3px;flex-shrink:0;margin-top:1px}
+.gA{background:var(--A-t);color:var(--A)} .gB{background:var(--B-t);color:var(--B)}
+.gC{background:var(--C-t);color:var(--C)} .gI{background:var(--ac-t);color:var(--ac)}
+.ct span{color:var(--soft)} .ct span b{color:var(--ink);font-weight:600}
+.infbox{margin-top:11px;padding:11px 13px;background:var(--ac-t);border:1px dashed var(--ac-l);border-radius:5px}
+.infbox .ih{font-family:var(--m);font-size:8.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--ac);
+ font-weight:700;margin-bottom:7px;display:flex;align-items:center;gap:7px}
+.infbox p{margin:0 0 8px;font-size:12.5px;line-height:1.6}.infbox p:last-child{margin-bottom:0}
+
+/* ---------- screenshot card ---------- */
+.shot{background:#fff;border:2px solid var(--ink);border-radius:4px;padding:0;overflow:hidden;
+ max-width:800px;box-shadow:0 3px 16px rgba(20,23,27,.09)}
+.shot-h{background:var(--ink);color:#fff;padding:13px 22px;display:flex;justify-content:space-between;align-items:baseline;gap:16px}
+.shot-h .t{font-family:var(--s);font-size:16px;font-weight:600}
+.shot-h .s{font-family:var(--m);font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;opacity:.72}
+.shot-d{padding:20px 22px 16px;display:flex;align-items:baseline;gap:18px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.shot-d .big{font-family:var(--m);font-size:42px;font-weight:700;letter-spacing:-.035em;line-height:1}
+.shot-d .big small{font-size:15px;font-weight:400;color:var(--soft);letter-spacing:0}
+.shot-d .ctx{flex:1;min-width:200px;font-size:12.5px;color:var(--soft);line-height:1.5}
+.shot-b{padding:16px 22px 18px}
+.shot-b .lb{font-family:var(--m);font-size:9px;letter-spacing:.13em;text-transform:uppercase;color:var(--faint);
+ font-weight:700;margin-bottom:9px}
+.shot-b ul{list-style:none;margin-bottom:14px}
+.shot-b li{font-size:12.7px;line-height:1.5;padding-left:15px;position:relative;margin-bottom:7px}
+.shot-b li::before{content:'';position:absolute;left:0;top:7px;width:5px;height:5px;border-radius:50%;background:var(--ac)}
+.shot-b ul.neg li::before{background:transparent;border:1.5px solid var(--faint);width:6px;height:6px;top:6px;left:-1px}
+.shot-b ul.neg li{color:var(--soft)}
+.shot-b ul.neg li b{color:var(--ink);font-weight:600}
+.shot-b li em{font-style:normal;font-family:var(--m);font-size:10.5px;color:var(--soft);display:block;margin-top:2px}
+.shot-f{border-top:1px solid var(--line);padding:11px 22px;background:#FBFBFC;
+ font-family:var(--m);font-size:9.5px;color:var(--faint);line-height:1.5;display:flex;justify-content:space-between;gap:14px}
+.shotbar{display:flex;gap:8px;margin-bottom:10px;align-items:center}
+.shotbar button{background:var(--card);border:1px solid var(--line);border-radius:5px;padding:6px 12px;
+ font-family:var(--m);font-size:10px;letter-spacing:.09em;text-transform:uppercase;cursor:pointer;color:var(--soft)}
+.shotbar button:hover{border-color:var(--ac);color:var(--ac)}
+.shotbar span{font-size:11px;color:var(--faint)}
+
+.soc{padding:4px 18px 12px}
+.socrow{display:grid;grid-template-columns:170px 1fr;gap:14px;padding:11px 0;border-top:1px solid var(--line2);
+ font-size:12.5px;line-height:1.5}
+.socrow:first-of-type{border-top:0}
+.socrow b{font-family:var(--s);font-size:13.5px;font-weight:600}
+.socrow em{font-style:normal;font-family:var(--m);font-size:9.5px;color:var(--faint);display:block;margin-top:2px}
+.legend{margin-top:26px;padding-top:16px;border-top:1px solid var(--line);font-size:11.5px;color:var(--faint);line-height:1.65;max-width:86ch}
+.legend b{color:var(--soft)} .legend code{font-family:var(--m);font-size:10.5px}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<div class="app">
+<div class="rail">
+ <div class="brand"><div class="k">Iodine-131</div><h1>Activity Planner</h1></div>
+ <div id="inputs"></div>
+ <div id="hiddenNote"></div>
+ <button class="rst" id="rst">Reset</button>
+</div>
+
+<div class="main">
+ <div id="route"></div>
+ <div id="body"></div>
+
+ <h2>Summary card — for the slide</h2>
+ <div class="shotbar">
+  <button id="copyBtn">Copy text</button>
+  <span>Screenshot the card below, or copy as text.</span>
+ </div>
+ <div id="shot"></div>
+
+ <h2>Where the societies diverge</h2>
+ <div class="card soc" id="soc"></div>
+
+ <p class="legend"><b>Grades.</b> <code>A</code> randomized trial or meta-analysis of randomized trials. <code>B</code> cohort above 400 patients, or a society guideline. <code>C</code> smaller or confounded cohort, or physiologic reasoning without outcome data. <code>INFERENCE</code> is not a grade — it marks a conclusion drawn by reasoning over the cited material where no study addresses the question directly, and those blocks say so.<br><br>
+ <b>Fields appear only when they matter.</b> An input is shown when changing it would change the recommendation given everything else currently selected. Tumor size below 4 cm, for instance, never alters the answer, so the sub-4 cm distinctions are not offered. Hidden fields can be revealed at any time.<br><br>
+ <b>Scope.</b> This states what the published evidence supports for a population. It does not replace judgement applied to a patient and carries no authority over a written directive. Risk tiers are implemented from the 2025 ATA four-category structure; verify the low-intermediate / intermediate-high boundary against the criteria tables before adopting locally.</p>
+</div>
+</div>
+
+<script>
+/* ============================ STATE ============================ */
+const S={dx:'ptc',T:'small',ete:'none',node:'n0',vi:'none',res:'r0',dist:'none',pat:'na',ren:'ok',
+ mol:'unk',surg:'total',preg:'na',iod:'none',age:45,cum:0,up:null,tg:null,wt:null,vol:null,raiu:null,anc:null,plt:null,
+ multi:false,tgab:false,rai_r:false,redif:false};
+const DEF=JSON.parse(JSON.stringify(S));
+
+/* ============================ EVIDENCE ============================ */
+const REF={
+tgdm:['B','<b>Thyroglobulin threshold for distant metastasis</b> — Braz J Med Biol Res 2020, n=655, all with post-op stimulated Tg above 10 ng/mL and negative antibodies. The cutoff associated with <b>pulmonary metastasis was 117.5 ng/mL</b> (sensitivity 70.2%, specificity 71.7%, AUC 0.836) and with bone metastasis 150.5 ng/mL. Negative predictive value 93.7%.'],
+tgdm2:['C','<b>Pre-RAI stimulated Tg</b> — Chinese series proposing a lower cutoff of 52.75 ng/mL for predicting distant metastatic disease before radioiodine, intended to allow timely activity adjustment.'],
+tgpat:['C','<b>Tg differs by pulmonary pattern</b> — n=57 with initial distant metastasis. Micronodular lung metastasis carried the <b>lowest</b> preoperative Tg of any subgroup, median 117.7 ng/mL, against 333.0 ng/mL for macronodular disease. Bone metastasis carried significantly higher values still.'],
+tgdt:['C','<b>Thyroglobulin doubling time</b> — Nucl Med Mol Imaging 2025. For predicting FDG-PET-positive disease, Tg doubling time reached specificity 93.9% and positive predictive value 92.6%, against 78.8% and 83.5% for the absolute Tg level (p&lt;0.001). Doubling time under 12 months was an independent predictor of progression-free and overall survival.'],
+marrow:['B','<b>Sodium iodide I-131 prescribing information</b> (FDA label). Obtain a complete blood count within one month of therapy. <b>If the patient shows leukopenia or thrombocytopenia, use dosimetry to determine a safe activity while delivering less than 2 Gy to bone marrow.</b> Hematopoietic suppression is dose-dependent and manifests as transient thrombocytopenia or neutropenia three to five weeks after administration.'],
+marrow2:['B','<b>Molenaar</b>, J Clin Endocrinol Metab 2015;100:3911–7. n=331. Platelets and leukocytes fell significantly at six months and one year, recovering by five years. Transient thrombocytopenia in 4.2%. On multivariate analysis <b>cumulative I-131 activity was independently associated with thrombocytopenia</b>, alongside older age, male sex and T4 stage.'],
+marrow3:['B','<b>Long-term hematologic surveillance</b> — retrospective series, n=1389. Leukopenia, thrombocytopenia and lymphopenia occurred significantly more often above 175 mCi, with multiple administrations, over age 60, and in advanced-stage disease. Marrow suppression overall runs near 25% with nadir one to two months after administration; grade 1 suppression in 38% of high-activity treatments.'],
+marrow4:['C','<b>Cumulative activity ≥600 mCi</b> — n=176. Anemia in 7.9% and neutropenia in 2.8%; permanent salivary dysfunction in 3.9%; second primary malignancy in 1.1%. Fewer than 10% achieved remission, leading the authors to argue that further administrations beyond that threshold should be decided individually.'],
+ion:['A','<b>IoN</b> — Mallick, Lancet 2025. Randomized, n=504, 33 centers. pT1–pT2, N0/Nx/N1a, R0 resection. Omission non-inferior to 1.1 GBq for 5-year recurrence-free survival.'],
+est2:['A','<b>ESTIMABL2</b> — Leboulleux, NEJM 2022; 5-year Lancet Diab Endo 2025;13:38–46. n=776. Event-free 93.2% without radioiodine versus 94.8% with, at five years.'],
+est1:['A','<b>ESTIMABL1</b> — Schlumberger, NEJM 2012; 5-year Lancet Diab Endo 2018. 1.1 GBq equivalent to 3.7 GBq for remnant ablation.'],
+hilo:['A','<b>HiLo</b> — Mallick, NEJM 2012; long-term Dehbi, Lancet Diab Endo 2019. Low <i>and</i> intermediate risk. 30 mCi non-inferior, no long-term recurrence difference, fewer adverse events, shorter isolation.'],
+rhtsh:['A','<b>rhTSH versus withdrawal</b> — meta-analyzes of 6–7 randomized trials, n=1535 and 1660. Ablation success equivalent (RR 0.97, 0.94–1.01); quality of life markedly better with rhTSH.'],
+metaneg:['A','<b>Meta-analyzes favoring equivalence</b> — Valachis, 8 randomized trials n=1772, RR 0.94 (0.85–1.04). Hackshaw and Fang concur.'],
+metapos:['A','<b>Meta-analyzes favoring the higher activity</b> — Song, 17 randomized trials n=3737: 11% higher ablation success at 3.7 GBq (RR 0.89, 0.81–0.97). The randomized evidence is not unanimous.'],
+ho13:['A','<b>Ho</b>, N Engl J Med 2013;368:623–32. Selumetinib restored radioiodine uptake in 60% of refractory patients. All NRAS-mutant responded; 1 of 9 BRAF-mutant reached the dosimetry threshold.'],
+gravesRCT:['A','<b>Fixed versus calculated activity in Graves disease</b> — randomized, n=122. Treatment failure at six months 19.6% with fixed activity versus 37.5% with calculated dosing (RR 0.53, 0.28–0.98), favoring fixed.'],
+tngMeta:['A','<b>Toxic nodular goiter protocols</b> — systematic review and meta-analysis. Calculated dosing gave a 9.6% higher cure rate than fixed with only 0.3% more permanent hypothyroidism. Fixed high-dose gave 18.1% more cure but 23.9% more hypothyroidism than fixed low-dose.'],
+ata25:['B','<b>ATA 2025 guidelines</b> — Ringel, Sosa, Baloch et al., Thyroid 2025;35(8):841–985. GRADE methodology. Four-tier recurrence risk replacing three. Routine radioiodine still discouraged at low risk. Multifocality and margin status newly incorporated.'],
+ata15:['B','<b>ATA 2015, recommendation 77</b> — Haugen, Thyroid 2016;26:1–133. Empiric activity up to 200 mCi for known structural disease; not exceeding 150 mCi from age 70. Empiric 100–200 mCi for stimulated Tg ≥10 ng/mL with negative imaging.'],
+snmmi:['B','<b>SNMMI Procedure Standard / EANM Practice Guideline</b> — Avram, Giovanella, Greenspan et al., J Nucl Med 2022;63:15N–35N. Empiric activity at or below 100 mCi is <b>not recommended</b> for locoregionally advanced or distant metastatic disease.'],
+eta:['B','<b>2022 ETA consensus statement</b> — Pacini, Fuhrer, Elisei et al., Eur Thyroid J 2022. Individualised patient selection rather than routine post-surgical radioiodine.'],
+who:['B','<b>WHO Classification of Endocrine and Neuroendocrine Tumors, 5th ed.</b>, IARC 2022, adopted by ATA 2025. Invasive encapsulated follicular variant of papillary carcinoma classified with follicular carcinoma; high-grade differentiated and poorly differentiated carcinoma separated.'],
+benua:['B','<b>Benua–Leeper constraint</b> — Sgouros, J Nucl Med 2006;47:1977 and 1985. Whole-body retention at 48 hours under 80 mCi with iodine-avid diffuse lung disease, 120 mCi without, blood dose under 200 cGy.'],
+kim:['B','<b>Kim</b>, Int J Endocrinol 2021;6642971. Propensity-matched, n=1448. No disease-free survival difference between 100 and 150 mCi (p=0.378); recurrence 3.1% versus 5.6%. Nodal ratio above 0.22 and post-treatment Tg above 10 predicted recurrence — activity did not.'],
+jin:['B','<b>Jin</b>, Endocrinol Metab 2020. n=436, N1b papillary carcinoma. Recurrence 5.9% versus 4.0%, no difference in recurrence-free survival (p=0.351).'],
+durante:['B','<b>Durante</b>, J Clin Endocrinol Metab 2006;91:2892–9. n=444 with distant metastases. Complete response concentrates in younger patients with small-volume iodine-avid pulmonary disease.'],
+avram13:['B','<b>Avram</b>, J Clin Endocrinol Metab 2013;98:1163–71. n=320. Diagnostic I-131 SPECT/CT found regional metastases in 35% and distant in 8%; staging changed in 25% of patients 45 and over. Unsuspected nodal disease in 24–38% assigned pN0 or pNx.'],
+avram15:['B','<b>Avram</b>, J Clin Endocrinol Metab 2015;100:1895–902. Adding diagnostic SPECT/CT and stimulated Tg to histopathology changed estimated recurrence risk in 15% and <b>management in 31%</b>.'],
+spm:['B','<b>Second primary malignancy</b> — Nguyen 2024 review. Cumulative activity above roughly 150 mCi carries an adjusted hazard ratio near 1.30 for all cancers, with a leukemia signal. Risk accrues across administrations.'],
+pedATA:['B','<b>ATA pediatric guidelines</b> — Francis, Waguespack, Bauer et al., Thyroid 2015;25:716–759. No standardised pediatric activity; adjusted by the ratio of the child\u2019s body size to an adult\u2019s.'],
+pedETA:['B','<b>2022 ETA pediatric guidelines</b> — Eur Thyroid J 2022;11(6). The panel searched for a dose–effect relationship by weight, fixed activity or dosimetry and <b>found no literature</b>.'],
+erriti:['B','<b>ERRITI</b> — Clin Cancer Res 2022;28:4194. Genotype-guided: trametinib for BRAF wild-type, trametinib plus dabrafenib for mutant, 21 days. Uptake restored in 7 of 20 (35%). Low pre-treatment FDG glycolytic rate predicted success.'],
+leboul23:['B','<b>Leboulleux</b>, Clin Cancer Res 2023;29:2401–9. Dabrafenib plus trametinib then I-131 in BRAF V600E refractory disease: 38% partial response, 52% stable. Progression-free survival 82% at one year, 68% at two.'],
+itog:['B','<b>International Thyroid Oncology Group statement on redifferentiation</b> — Lancet Diab Endo 2025. Frames redifferentiation as a recognized pathway rather than experimental.'],
+prep:['B','<b>Preparation and radiation protection guidance</b> — Clin Oncol 2022. Success depends on TSH above 30 mIU/L and relative iodine deficiency. Contrast media and medications are iodine sources that must be actively excluded.'],
+tgab:['B','<b>Thyroglobulin antibody interpretation</b> — ATA 2025 emphasizes the temporal trend in TgAb rather than absolute values, and raises the unstimulated Tg threshold for excellent response to 2.5 ng/mL in non-ablated patients.'],
+polish:['B','<b>Prospective 30 / 60 / 100 mCi comparison</b> — n=309, randomized, 10-year follow-up. Equal five-year efficacy, but a second course was required in 22% at 30 mCi versus 13.3% at 60 and 11.2% at 100.'],
+eanmBenign:['B','<b>EANM guideline on radioiodine therapy of benign thyroid disease</b>. Target absorbed doses of roughly 120 Gy for Graves disease, 200 Gy for toxic multinodular goiter and 300 Gy for solitary toxic adenoma. Underdosing occurs when activity sits in unsuppressed tissue outside the volume measured.'],
+ataHyper:['B','<b>ATA / AACE hyperthyroidism guidance</b>. Administer sufficient activity in a single administration — typically 10 to 15 mCi — to render the patient hypothyroid. In children, avoid radioiodine below age five; keep calculated activity under 10 mCi between five and ten years, and use above 150 µCi per gram of thyroid tissue.'],
+mtc:['B','<b>Medullary carcinoma</b> — derived from parafollicular C cells, which do not express the sodium-iodide symporter. Radioiodine has no mechanism of action. Management rests on complete surgical resection, calcitonin and CEA kinetics, germline and somatic RET testing, and selective RET inhibition for advanced disease.'],
+atc:['B','<b>Anaplastic carcinoma</b> — dedifferentiated and non-iodine-avid. Radioiodine has no role. Rapid BRAF V600E testing is the priority, since BRAF-mutant disease responds to dabrafenib plus trametinib; management otherwise combines surgery where feasible, external beam radiotherapy and systemic therapy.'],
+lymph:['C','<b>Primary thyroid lymphoma</b> — a hematologic malignancy of lymphoid rather than follicular origin, with no iodine avidity. Diagnosis is by core biopsy rather than fine-needle aspiration, and treatment is chemoimmunotherapy with or without radiotherapy.'],
+gravesCalc:['C','<b>Calculated dosing in Graves disease</b> — n=316, single calculated activity of 0.2 mCi per estimated gram adjusted for 24-hour uptake; administered activities 5–70 mCi, mean 18.1. Single-administration success 93.3%. Prior propylthiouracil predicted failure and markedly prolonged time to response.'],
+sabra:['C','<b>Sabra, Grewal, Ghossein, Tuttle</b>, Thyroid 2014;24:1088–95. n=181 N1b. Above 100 mCi did not improve initial response, most firmly in younger Stage I patients; 150–260 mCi may improve response in older patients with Stage IVa disease.'],
+gray:['C','<b>Gray</b>, Surgery 2019;165:37–43. 66 propensity-matched pairs across two countries. Recurrence 36% at 100 mCi versus 20% at 150 (p=0.03). Confounded: patients in one country were dosed lower by national policy, so allocation tracked geography.'],
+wije:['C','<b>Wijewardene</b>, Eur Thyroid J 2021;10:408–15. No recurrence difference between roughly 108 and 162 mCi in intermediate and high risk receiving adjuvant therapy.'],
+klubo:['C','<b>Klubo-Gwiezdzinska</b>, J Clin Endocrinol Metab 2011. n=87 with distant metastases or locoregionally advanced disease. Dosimetry-guided prescribing achieved better complete response rates than empiric prescribing in the distant-metastasis group.'],
+lung:['C','<b>Pulmonary metastases</b> — Song, Eur J Endocrinol 2015;173:399–408, and a 151-patient series with 17 complete, 71 partial and 63 non-responses. Nodule size, iodine concentration and absence of extrapulmonary disease predicted response; survival 72% at five years.'],
+bone:['C','<b>Bone metastases</b> — EJNMMI 2022;49, n=178 across two referral centers. Only 31.7% of non-refractory patients achieved complete response. FDG avidity within a metastasis predicted non-response and poor survival.'],
+i124:['C','<b>Lesional dosimetry threshold</b> — I-124 PET dose–response supports roughly 85 Gy for lesion response in both pulmonary and bone metastases. Standard empiric activities frequently fail to reach it in bone.'],
+onco:['C','<b>Oncocytic carcinoma</b> — Lukovic, Front Endocrinol 2021;12:795184, n=263 expert-reviewed. Roughly 10% of metastases concentrate iodine against about 75% for follicular carcinoma. Widely invasive growth, extrathyroidal extension and angioinvasion drove distant metastasis risk (HR 17–33).'],
+rair:['C','<b>Radioiodine-refractory biology</b> — high MAPK pathway output associates with loss of iodine avidity; cumulative administered activity does not distinguish responders from non-responders.'],
+rairdef:['C','<b>Refractory definition</b> — Dadu and Cabanillas: no uptake at known metastatic sites; growth despite I-131 with confirmed uptake; growth within a year; or cumulative activity above 600 mCi with persistent disease. A 2024 EJNMMI commentary argues this needs revising now that redifferentiation can reverse it.'],
+theran:['C','<b>Giovanella</b>, Semin Nucl Med 2024;54:470–87. Post-therapy imaging upstages a non-negligible proportion of patients with negative neck ultrasound and low or undetectable thyroglobulin.'],
+ptscan:['C','<b>Post-therapy versus pre-therapy scintigraphy</b> — Radiology 2008, n=108. Post-therapy scans revealed avid foci outside the thyroid bed missed on pre-therapy I-123 in 18%, producing upstaging in 10%.'],
+spectct:['C','<b>SPECT/CT versus planar</b> — J Nucl Med 2009, n=57: nodal stage information gained in 35%, risk stratification changed in 25%. A separate 78-patient series found ATA category changed in 16.7% and the therapeutic plan in 19.2%.'],
+ajr10:['C','<b>Diagnostic SPECT/CT and activity selection</b> — AJR 2010, n=48. Altered planar interpretation in 40% and stage in 21%, and <b>changed the proposed therapeutic activity in 58%</b>, in both directions.'],
+pedwt:['C','<b>Pediatric weight-based practice</b> — Reynolds relative activity by age (0.83 at 15 years, 0.54 at 10, 0.35 at 5); the 1 mCi/kg convention; and series showing wide variability with significantly higher blood absorbed dose at low body weight.'],
+pedscan:['C','<b>Pediatric scanning</b> — a negative diagnostic whole-body scan is common in a child who nonetheless has pulmonary metastases; the post-therapy scan is the study that finds them.'],
+renal:['C','<b>Renal impairment</b> — AJR 2020;215:1–12; ATA 2015. Iodine-131 is renally cleared; empiric activity is reduced by up to half. No outcome trial exists, which is itself the argument for measuring.'],
+elderly:['C','<b>Distant metastases in older patients</b> — n=57 aged 65 and above: 5- and 10-year overall survival 71.5% and 30.5%, with 61% radioiodine-refractory. Loss of iodine avidity dominated prognosis.'],
+lid:['C','<b>Low-iodine diet adequacy</b> — PLOS One 2021, 1,715 measurements in 1,054 patients. Urinary iodine/creatinine after two weeks was 72.4 with rhTSH versus 29.9 with withdrawal. Female sex, older age and first-time dieting predicted poorer adequacy.'],
+tsh30:['C','<b>Is TSH above 30 required?</b> — 2023 review. The threshold may not be necessary at low and intermediate risk, and two weeks of withdrawal may suffice. Data do not extend to high-risk disease.']
+};
+
+/* ============================ INPUT SCHEMA ============================ */
+const DX_DTC=['ptc','aggr','ftc','hg'], DX_NONE=['nonavid'], DX_BEN=['graves','tmng','adenoma','ntg'];
+const isDTC=()=>DX_DTC.includes(S.dx), isBen=()=>DX_BEN.includes(S.dx), isNone=()=>DX_NONE.includes(S.dx);
+
+const FIELDS=[
+ {k:'dx',label:'Diagnosis',type:'stk',always:true,opts:[
+  ['ptc','Papillary carcinoma'],['aggr','Papillary — aggressive subtype'],
+  ['ftc','Follicular / oncocytic / IEFVPTC'],['hg','High-grade or poorly differentiated'],
+  ['nonavid','Not iodine-avid — medullary, anaplastic, lymphoma'],
+  ['graves','Graves disease'],['tmng','Toxic multinodular goiter'],['adenoma','Toxic adenoma'],
+  ['ntg','Non-toxic goiter — volume reduction']]},
+ {k:'preg',label:'Pregnancy & lactation',type:'stk',show:()=>!isNone(),opts:[
+  ['na','Not applicable, or excluded'],['unk','Childbearing potential — not excluded'],
+  ['lact','Currently lactating'],['preg','Pregnant']]},
+ {k:'iod',label:'Recent iodine load',type:'seg',show:()=>!isNone(),opts:[
+  ['none','None'],['recent','Contrast <4 wk'],['mid','1–3 mo']]},
+ {k:'surg',label:'Extent of surgery',type:'seg',show:isDTC,opts:[
+  ['total','Total / near-total'],['comp','Completion done'],['lobe','Lobectomy only']]},
+ {k:'T',label:'Primary tumor',type:'seg',show:isDTC,opts:[['small','≤4 cm'],['t3','>4 cm']]},
+ {k:'ete',label:'Extrathyroidal extension',type:'seg',show:isDTC,opts:[
+  ['none','None'],['micro','Micro'],['strap','Strap (T3b)'],['major','Major (T4)']]},
+ {k:'node',label:'Nodal status',type:'stk',show:isDTC,opts:[
+  ['n0','N0 or Nx'],['micro','≤5 micrometastases <0.2 cm'],['mod','Clinical N1, all nodes <3 cm'],
+  ['big','Node ≥3 cm, or extranodal extension']]},
+ {k:'vi',label:'Vascular invasion',type:'seg',show:isDTC,opts:[
+  ['none','None'],['focal','1–3 foci'],['ext','≥4 foci']]},
+ {k:'res',label:'Resection',type:'seg',show:isDTC,opts:[
+  ['r0','R0'],['r1','R1 micro'],['r2','Gross residual']]},
+ {k:'dist',label:'Distant disease',type:'stk',show:isDTC,opts:[
+  ['none','None'],['indet','Indeterminate or suspicious'],['m1','Proven or presumed M1']]},
+ {k:'pat',label:'Pulmonary pattern',type:'seg',show:()=>isDTC()&&S.dist==='m1',opts:[
+  ['na','No lung'],['macro','Discrete'],['diff','Diffuse']]},
+ {k:'ren',label:'Renal function',type:'seg',show:()=>!isNone(),opts:[
+  ['ok','≥60'],['mid','30–59'],['low','<30'],['esrd','Dialysis']]}
+];
+const TOGGLES=[
+ {k:'multi',label:'Multifocal',show:isDTC},
+ {k:'tgab',label:'TgAb positive',show:isDTC},
+ {k:'rai_r',label:'Prior refractory behavior',show:isDTC},
+ {k:'redif',label:'Redifferentiation given or planned',show:isDTC}
+];
+let showAll=false;
+
+/* ============================ RISK TIER ============================ */
+function tier(){
+ if(!isDTC())return null;
+ if(S.dist==='m1'||S.res==='r2'||S.ete==='major'||S.node==='big'||S.dx==='hg'||S.vi==='ext'
+    ||(S.tg!==null&&!S.tgab&&S.tg>=30)) return 'High';
+ if(S.dx==='aggr'||S.node==='mod'||S.ete==='strap'||S.T==='t3'||(S.dx==='ftc'&&S.vi==='focal')) return 'Intermediate-high';
+ if(S.ete==='micro'||S.node==='micro'||S.res==='r1'||S.multi||S.vi==='focal') return 'Low-intermediate';
+ return 'Low';
+}
+const TIERTXT={
+ Low:'Intrathyroidal, complete resection, no aggressive histology, no vascular invasion. The 2025 guidelines continue to discourage routine radioiodine here, and two randomized trials support omission outright.',
+ 'Low-intermediate':'A category introduced in 2025. Benefit is possible but not established and the decision is explicitly individualised. This is the tier where the previous three-category system generated most of the disagreement.',
+ 'Intermediate-high':'A 2025 category with clearer indications, because the likelihood of benefit is higher. Treatment is generally appropriate; the argument concerns activity rather than whether.',
+ High:'Radioiodine is indicated as tumor-targeted or adjuvant therapy. The only tier where escalation above 100 mCi carries guideline support.'};
+
+/* ============================ ENGINE ============================ */
+const CONV='<br><br><i style="opacity:.85">The activity shown is institutional convention rather than a cited figure. The literature specifies the constraint and asks for measurement; it does not name a number. Treat this as a conservative placeholder pending dosimetry.</i>';
+function build(){
+ const H=[],N=[],R=[];let cap=null,STOP=null,head=null,tension=null;
+
+ /* ---- non-iodine-avid disease: stop here ---- */
+ if(isNone()){
+  head={dose:'Not indicated',band:'no mechanism of action',
+   what:'Three tumor types reach the thyroid clinic and do not concentrate iodine. Confirm which one, because the alternative management differs even though the radioiodine answer does not.'};
+  H.push(['None of these tumors express the sodium-iodide symporter',
+   'Radioiodine works only through the sodium-iodide symporter, which is a feature of follicular cells. Medullary carcinoma arises from parafollicular C cells; anaplastic carcinoma has dedifferentiated past symporter expression; lymphoma is lymphoid rather than epithelial. In none of the three is there a mechanism for iodine to act through, so no activity is appropriate at any risk level and no staging finding changes that.',
+   'Radioiodine is therefore not a low-yield option here — it is a null one, and the discussion should move to the alternative pathway rather than to a smaller number.','mtc','atc','lymph']);
+  N.push(['Medullary carcinoma — what replaces radioiodine',
+   'Management rests on complete surgical resection, since no systemic therapy is curative. Calcitonin and CEA kinetics drive surveillance, with doubling times carrying the prognostic weight that thyroglobulin carries in differentiated disease. Germline and somatic RET testing is mandatory — germline because it changes family screening, somatic because selective RET inhibition is the treatment for advanced disease.','mtc']);
+  N.push(['Anaplastic carcinoma — what replaces radioiodine',
+   'Rapid BRAF V600E testing is the immediate priority, because BRAF-mutant disease responds to dabrafenib plus trametinib and the window to act is short. Management otherwise combines resection where feasible, external beam radiotherapy and systemic therapy. The clock matters more than the choice.','atc']);
+  N.push(['Primary thyroid lymphoma — what replaces radioiodine',
+   'The diagnostic step is the one most often missed: core biopsy rather than fine-needle aspiration, because architecture is needed and cytology alone will not classify it. Treatment is chemoimmunotherapy with or without radiotherapy, and outcomes are good — which makes the missed or delayed diagnosis the main avoidable harm.','lymph']);
+  return {H,N,R,cap,STOP,head,t:null,ALT:null,tension:null};
+ }
+
+
+ /* ---- benign hyperfunctioning disease ---- */
+ if(isBen()){
+  const target={graves:[120,'Graves disease'],tmng:[200,'toxic multinodular goiter'],
+   adenoma:[300,'solitary toxic adenoma'],ntg:[150,'non-toxic goiter']}[S.dx];
+  let est=null;
+  if(S.vol&&S.raiu) est=Math.round((target[0]*S.vol)/(6.67*S.raiu));
+  if(S.preg==='preg')STOP='pregnancy';
+  else if(S.preg==='lact')STOP='lactation';
+  else if(S.iod==='recent')STOP='iodine load';
+
+  head={dose: STOP?'Defer': (S.dx==='graves'?(est?est+' mCi':'10–15 mCi'):(est?est+' mCi':'calculated')),
+   band: S.dx==='graves'?'fixed activity is the better-supported route':'calculated dosing preferred',
+   what:'Benign '+(S.dx==='ntg'?'goiter, treated for volume reduction':'hyperthyroidism')+'. Target absorbed dose approximately '+target[0]+' Gy for '+target[1]+'.'};
+
+  if(STOP) H.push(['Absolute stop — '+STOP,
+   STOP==='pregnancy'?'Iodine-131 crosses the placenta and concentrates in the fetal thyroid from about week ten, where it can ablate it. Defer until after delivery and after lactation has ceased.'
+   :STOP==='lactation'?'Lactating breast concentrates iodine avidly, with dose to the infant through milk. Breastfeeding must have stopped and lactation involuted, conventionally at least six weeks.'
+   :'A contrast load competes directly for the symporter and can waste the administration entirely while the patient absorbs the toxicity regardless. Delay and measure urinary iodine.','prep']);
+
+  if(S.dx==='graves'){
+   N.push(['Fixed activity outperformed calculated dosing in the randomized comparison',
+    'A randomized trial of 122 patients found treatment failure at six months of 19.6% with fixed activity against 37.5% with calculated dosing — a relative risk of 0.53 favoring fixed. Guidance is to give enough in a single administration, typically 10 to 15 mCi, to render the patient hypothyroid rather than to aim for euthyroidism.',
+    'Where calculated dosing is used, 0.2 mCi per estimated gram adjusted for 24-hour uptake achieved single-administration success in 93.3% of 316 patients, with a mean activity of 18.1 mCi. Prior propylthiouracil predicted failure and roughly tripled time to response.',
+    ['gravesRCT','ataHyper','gravesCalc']]);
+  } else if(S.dx==='ntg'){
+   N.push(['Volume reduction is a different endpoint from cure of hyperthyroidism',
+    'The aim is reduction in goiter volume rather than ablation of function, so the target absorbed dose and the acceptable rate of induced hypothyroidism both differ. Uptake is often low in a non-toxic gland, which is the main determinant of whether the approach is feasible at all.',
+    ['eanmBenign']]);
+  } else {
+   N.push(['Calculated dosing is preferred in nodular disease',
+    'A meta-analysis of protocols in toxic nodular goiter found calculated dosing gave a 9.6% higher cure rate than fixed with only 0.3% more permanent hypothyroidism. Fixed high-dose achieved 18.1% more cure than fixed low-dose but at the cost of 23.9% more hypothyroidism.',
+    'The mechanism matters: underdosing occurs when a non-negligible fraction of the activity sits in unsuppressed tissue outside the nodules included in the volume measurement.',
+    ['tngMeta','eanmBenign']]);
+  }
+  N.push(['Estimating the activity',
+   'Absorbed dose targets are approximately 120 Gy for Graves disease, 200 Gy for toxic multinodular goiter and 300 Gy for solitary toxic adenoma. Entering gland volume and 24-hour uptake gives a first estimate from those targets; it is a starting point for a dosimetric calculation, not a substitute for one.'
+   +(est?' <b>Current estimate: '+est+' mCi.</b>':''),
+   ['eanmBenign']]);
+  if(S.age<19) N.push(['Pediatric hyperthyroidism',
+   'Radioiodine is avoided below age five. Between five and ten years the calculated activity should stay under 10 mCi, and where radioiodine is used the activity should exceed 150 µCi per gram of thyroid tissue — low activity to a partially treated gland is the combination to avoid.',
+   ['ataHyper','pedATA']]);
+  if(S.ren!=='ok') N.push(['Renal impairment',
+   'Iodine-131 is renally cleared, so impairment prolongs whole-body retention and raises marrow dose for the same administered activity. Activity is reduced empirically; no outcome trial exists.',['renal']]);
+  const ALT = S.dx==='graves'
+   ? [['Calculated dosing','failed more often than fixed in the randomized comparison — 37.5% versus 19.6% at six months',['gravesRCT']],
+      ['Aiming for euthyroidism','guidance is to give enough in one administration to render the patient hypothyroid; targeting euthyroidism raises the persistent-hyperthyroidism rate',['ataHyper']],
+      ['Proceeding on prior propylthiouracil','predicted treatment failure and roughly tripled time to response in a 316-patient series',['gravesCalc']]]
+   : S.dx==='ntg'
+   ? [['Treating as if for hyperthyroidism','the endpoint is volume reduction, not ablation of function, so the absorbed-dose target and the acceptable rate of induced hypothyroidism both differ',['eanmBenign']],
+      ['Assuming adequate uptake','uptake is often low in a non-toxic gland and is the main determinant of whether the approach is feasible at all',['eanmBenign']]]
+   : [['Fixed low-dose','achieved 18.1% less cure than fixed high-dose in the meta-analysis',['tngMeta']],
+      ['Fixed high-dose','achieved more cure but at 23.9% more permanent hypothyroidism',['tngMeta']],
+      ['Volume from palpation alone','underdosing occurs when activity sits in unsuppressed tissue outside the volume measured',['eanmBenign']]];
+  if(S.dx==='graves') tension={a:'Fixed activity, 10–15 mCi',b:'Calculated activity',
+   why:'A randomized comparison of 122 patients found treatment failure at six months of 19.6% with fixed activity against 37.5% with calculated dosing.',
+   take:'Fixed is the evidence-favored option and simpler to deliver. Calculated dosing remains appropriate and performs well — 0.2 mCi per estimated gram adjusted for 24-hour uptake achieved single-administration success in 93.3% of 316 patients. The randomized result favors fixed; the observational result shows calculated works. Prior propylthiouracil predicts failure either way and is the more important thing to check.',
+   c:['gravesRCT','gravesCalc','ataHyper']};
+  else if(S.dx!=='ntg') tension={a:'Calculated activity',b:'Fixed high-dose',
+   why:'A systematic review of protocols in toxic nodular goiter found calculated dosing gave a 9.6% higher cure rate than fixed, with only 0.3% more permanent hypothyroidism.',
+   take:'Calculated is the evidence-favored option. Fixed high-dose remains appropriate — it achieved 18.1% more cure than fixed low-dose, at the cost of 23.9% more permanent hypothyroidism. That trade is the whole decision, and in a patient for whom hypothyroidism is the lesser problem it is a reasonable one to accept.',
+   c:['tngMeta','eanmBenign']};
+  return {H,N,R,cap,STOP,head,t:null,ALT,tension};
+ }
+
+ /* ================= DIFFERENTIATED CARCINOMA ================= */
+ const t=tier(), adv=(S.dist==='m1'||S.res==='r2'), lowRisk=(t==='Low');
+
+ if(S.surg==='lobe') H.push(['Lobectomy only — the remnant is a lobe, not a bed',
+  'Ablation after hemithyroidectomy is a different undertaking. A whole remaining lobe absorbs the activity, repeat administration is frequently required, and a large remnant carries a real risk of radiation thyroiditis with neck pain and swelling. The question that precedes the activity is whether completion thyroidectomy is the better route.','ata25','benua']);
+
+ if(S.preg==='preg'){ STOP='pregnancy';
+  H.push(['Pregnancy — absolute contraindication',
+   'Iodine-131 crosses the placenta and concentrates in the fetal thyroid from about week ten, where it can ablate it. No risk tier changes this. Defer until after delivery and after lactation has ceased — the disease is slow enough to wait.','pedATA','prep']); }
+ else if(S.preg==='lact'){ STOP='lactation';
+  H.push(['Lactation — defer and confirm the interval',
+   'Lactating breast expresses the sodium-iodide symporter and concentrates iodine avidly, delivering substantial dose to breast tissue and, through milk, to the infant. Breastfeeding must have stopped and lactation involuted, conventionally at least six weeks.','prep']); }
+ else if(S.preg==='unk'){
+  H.push(['Pregnancy not yet excluded',
+   'A negative pregnancy test is required before administration in anyone of childbearing potential. This is a procedural gate, and the activity discussion should not proceed as though it has been cleared.','prep']); }
+
+ if(S.iod==='recent'){ STOP=STOP||'iodine load';
+  H.push(['Iodinated contrast within four weeks — the activity will be wasted',
+   'A contrast load expands the stable iodine pool and competes directly for the symporter. Treating through it can waste the administration entirely while the patient absorbs the toxicity regardless. Delay, and measure urinary iodine rather than guess — adequacy varies predictably by preparation method, sex, age and prior experience.','prep','lid']); }
+ else if(S.iod==='mid') H.push(['Contrast one to three months ago — measure before proceeding',
+  'Most of a contrast load clears within four to eight weeks, but clearance is slower in renal impairment and varies between individuals. A urinary iodine measurement converts a guess into a fact for very little cost.','prep','lid']);
+
+ if(S.age<19){
+  const f=S.wt?Math.min(1,+(S.wt/70).toFixed(2)):(S.age>=15?0.83:S.age>=10?0.54:0.35);
+  H.push(['Pediatric — scale the activity, and say that you are scaling it',
+   'Both the ATA and the ETA pediatric guidelines decline to specify an activity for children. The ATA says only that activity is adjusted by the ratio of body size to an adult; the ETA searched for a dose–effect relationship and found no literature. Any number here is a convention and should be presented as one.'
+   +'<br><br>Scaling factor <b>'+f+'</b>'+(S.wt?' (weight '+S.wt+' kg ÷ 70)':' (age-based — enter a weight to refine)')
+   +' gives approximately <b>'+Math.round(100*f)+' mCi</b> where an adult would receive 100, and <b>'+Math.round(150*f)+' mCi</b> where an adult would receive 150.'
+   +'<br><br>Lower body weight drives significantly higher blood absorbed dose, so blood maximum-tolerable-activity should be calculated rather than assumed. And a negative diagnostic whole-body scan does not exclude pulmonary metastases in a child.','pedATA','pedETA','pedwt','pedscan']);
+ }
+ const cytopenia = (S.anc!==null&&S.anc<1.5)||(S.plt!==null&&S.plt<100);
+ if(cytopenia){ cap=Math.min(cap===null?30:cap,30);
+  const bits=[];
+  if(S.anc!==null&&S.anc<1.5) bits.push('ANC '+S.anc);
+  if(S.plt!==null&&S.plt<100) bits.push('platelets '+S.plt);
+  H.push(['Baseline cytopenia ('+bits.join(', ')+') — dosimetry, not an empiric activity',
+   'Marrow is the dose-limiting organ for radioiodine, and the prescribing information is unusually direct about this: obtain a complete blood count within one month, and where there is leukopenia or thrombocytopenia, <b>use dosimetry to determine a safe activity while keeping marrow dose below 2 Gy</b>. That is a labelled instruction rather than a suggestion.'
+   +'<br><br>Suppression is dose-dependent and typically declares three to five weeks after administration, with nadir at one to two months. It occurs in roughly a quarter of patients overall and in 38% at high activity. Cumulative activity is the one factor independently associated with thrombocytopenia on multivariate analysis, and leukopenia, thrombocytopenia and lymphopenia all rise significantly above 175 mCi.'
+   +'<br><br>A patient who starts below the normal range starts with less reserve to lose.'+CONV,'marrow','marrow2','marrow3']);
+ } else if((S.anc!==null&&S.anc<2.0)||(S.plt!==null&&S.plt<150)){
+  H.push(['Borderline counts — check the trend before exceeding 100 mCi',
+   'Counts below the normal range but above the treatment threshold still warrant attention, because the fall after administration is superimposed on wherever the patient starts. Risk of post-treatment thrombocytopenia rises with age above 60, male sex, T4 stage and cumulative activity — a patient carrying several of those with borderline counts is a different proposition from one carrying none.','marrow2','marrow3']);
+ }
+ if(S.ren==='esrd'){ cap=30;
+  H.push(['Dialysis — reduce and coordinate, do not dose empirically',
+   'Iodine-131 is renally cleared. On dialysis, whole-body retention is transformed and the marrow constraint binds long before any tumor dose is reached. Activity is reduced by up to half as a starting point and administration must be scheduled around dialysis. There is no trial to cite, which is exactly why this needs measurement rather than a number.'+CONV,'renal']); }
+ else if(S.ren==='low'){ cap=75;
+  H.push(['eGFR under 30 — reduce','Prolonged clearance raises marrow dose for the same administered activity. Reduce empirically or, better, measure.'+CONV,'renal']); }
+ else if(S.ren==='mid') H.push(['eGFR 30–59 — verify before exceeding 100',
+  'Moderate impairment matters at 150 mCi and above. Confirm the creatinine is current before supporting escalation.','renal']);
+
+ if(S.up!==null&&S.up>=10){ cap=Math.min(cap===null?15:cap,15);
+  H.push(['Remnant uptake '+S.up+'% — stage the treatment',
+   'A large remnant absorbs the activity intended for tumor and risks radiation thyroiditis. Ablate the remnant at low activity, then return for lesional dosimetry. This ceiling outranks every escalation indication, including proven distant disease.'+CONV,'benua','i124']); }
+ if(S.pat==='diff'){ cap=Math.min(cap===null?100:cap,100);
+  H.push(['Diffuse iodine-avid lung disease — retention sets the ceiling',
+   'Whole-body retention at 48 hours must stay under 80 mCi to avoid pneumonitis and pulmonary fibrosis; 120 mCi without lung involvement, blood dose under 200 cGy. Discrete metastases take a higher activity and diffuse uptake takes a lower one — an inversion that is counterintuitive to everyone outside nuclear medicine and worth stating each time.','benua']); }
+ if(S.age>=70&&(cap===null||cap>150)){ cap=150;
+  H.push(['Age '+S.age+' — 150 mCi ceiling','ATA recommendation 77 caps empiric activity at 150 mCi from age 70, on marrow and salivary grounds.','ata15']); }
+ if(S.cum>=600){ cap=Math.min(cap===null?100:cap,100);
+  H.push(['Cumulative '+S.cum+' mCi — dosimetry rather than another empiric administration',
+   'Beyond roughly 600 mCi lifetime, marrow reserve and second-malignancy risk dominate the calculus. In a series of patients treated past that threshold, anemia occurred in 7.9% and neutropenia in 2.8%, permanent salivary dysfunction in 3.9%, and fewer than one in ten achieved remission — which is the more sobering figure.','spm','rairdef','marrow4']); }
+ else if(S.cum>=150) N.push(['Prior activity is not spent and forgotten',
+  'At '+S.cum+' mCi cumulative, second-malignancy risk is already accruing — an adjusted hazard ratio near 1.30 above roughly 150 mCi, with a leukemia signal. It is a reason for restraint on this administration, not a reason to catch up.','spm']);
+
+ const ok=v=>cap===null||v<=cap;
+
+ /* ---- rungs ---- */
+ if(lowRisk&&!adv) R.push([0,'No radioiodine','rec','Two randomized trials support omission in this population.',
+  ['IoN and ESTIMABL2 each randomized patients of this profile to ablation or observation and found no difference in recurrence at five years. IoN enrolled pT1–pT2, N0 or Nx, with R0 resection; ESTIMABL2 enrolled pT1b or multifocal pT1a totalling 10 mm or more, N0 or Nx.',
+   'Two independent multicenter randomized trials reaching the same conclusion is as strong as evidence gets in this field, and the 2025 guidelines cite both in continuing to discourage routine radioiodine at low risk.',
+   'The honest counter-argument is staging rather than ablation: post-therapy imaging upstages a small but real proportion of patients with negative ultrasound and low thyroglobulin. If that is the reason to treat, it justifies 30 mCi and should be stated as a different indication.'],
+  ['ion','est2','ata25','theran'],[]]);
+ else if(t==='Low-intermediate'&&!adv) R.push([0,'No radioiodine','sup','Defensible, but outside the randomized evidence.',
+  ['IoN and ESTIMABL2 did not enrol this tier in meaningful numbers. IoN included some pT3a and N1a patients but the subgroups were underpowered and the investigators cautioned against extrapolating.',
+   'The 2022 ETA consensus supports individualised selection here and the 2025 ATA position is that benefit is possible but requires case-by-case assessment. Omission is reasonable to discuss; it is not evidence-backed the way it is one tier down.'],
+  ['ion','eta','ata25'],[]]);
+ else R.push([0,'No radioiodine','no',adv?'Not appropriate — there is disease to treat.':'Not supported at this risk tier.',
+  [adv?'With distant metastatic or gross residual disease, radioiodine is tumor-targeted therapy rather than ablation, and omission is not among the options under discussion.'
+     :'The randomized omission trials enrolled low-risk patients only. Extending them to this tier is unsupported in either direction — there is no trial showing omission is safe here.'],
+  adv?['snmmi','ata25']:['ion','est2'],[]]);
+
+ let v30,t30,b30,c30;
+ if(adv){v30='con';t30='Would under-treat known disease.';b30=['Empiric activity at or below 100 mCi is explicitly not recommended for locoregionally advanced or distant metastatic disease. Thirty is well below that floor.'];c30=['snmmi'];}
+ else if(S.up!==null&&S.up>=10){v30='rec';t30='The correct first step when a substantial remnant is present.';b30=['At '+S.up+'% uptake a low activity ablates the remnant without expending therapy on non-target tissue, and lesional dosimetry follows once the remnant is gone.'];c30=['benua','i124'];}
+ else if(lowRisk||t==='Low-intermediate'){v30='rec';t30='Randomized evidence shows this equals 100 mCi for ablation.';
+  b30=['ESTIMABL1 and HiLo both randomized patients to 1.1 versus 3.7 GBq and found equivalent ablation success, sustained in long-term follow-up. HiLo enrolled intermediate-risk patients as well as low-risk — the point most often missed when it is cited.',
+   'HiLo also reported fewer adverse events, shorter isolation and lower cost at the low activity.',
+   'The randomized evidence is not unanimous. Valachis pooled eight trials and found no difference; Song pooled seventeen trials with 3,737 patients and found an 11% higher ablation success rate at 3.7 GBq. A prospective three-arm comparison found equal five-year efficacy but a second course needed in 22% at 30 mCi against 11–13% higher up. The counter-argument concerns retreatment rather than oncologic outcome, and should be stated when 30 is chosen.'];
+  c30=['hilo','est1','metaneg','metapos','polish'];}
+ else if(t==='Intermediate-high'){v30='sup';t30='Within HiLo, but at the edge of it.';
+  b30=['HiLo included intermediate-risk patients and found non-inferiority. The 2025 subdivision places this tier at the upper end of what that trial covered, so 30 mCi is defensible but should be a stated choice rather than a default.'];c30=['hilo','ata25'];}
+ else {v30='no';t30='Below what the evidence supports at high risk.';
+  b30=['No randomized trial has tested low-activity ablation in high-risk disease. Both ATA and SNMMI/EANM position radioiodine here as adjuvant or tumor-targeted therapy rather than remnant ablation.'];c30=['ata25','snmmi'];}
+ R.push([30,'30 mCi',v30,t30,b30,c30,[]]);
+
+ let v100,t100,b100,c100;
+ if(adv){v100='no';t100='Explicitly not recommended for this indication.';
+  b100=['The SNMMI and EANM state that empiric activity at or below 100 mCi is not recommended for locoregionally advanced or distant metastatic disease, and that these patients require escalation or an individualised dosimetric approach.',
+   'This is guideline language phrased as a prohibition rather than a preference. If 100 mCi is nonetheless chosen — because of a physiologic ceiling, for instance — the reason should be recorded, because it is a documented departure.'];c100=['snmmi','ata15'];}
+ else if(t==='High'||t==='Intermediate-high'){v100='rec';t100='The best-supported activity for adjuvant treatment of locoregional disease.';
+  b100=['Two large propensity-matched cohorts found no benefit from exceeding it. One matched 1,448 patients and found no disease-free survival difference between 100 and 150 mCi, with recurrence numerically higher at the larger activity; a second found the same in 436 N1b patients.',
+   'What predicted recurrence in the larger series was nodal ratio above 0.22 and post-treatment thyroglobulin above 10 — burden and biology, not administered activity.',
+   'A separate 181-patient N1b series reached the same conclusion: above 100 mCi did not improve initial response.'];c100=['kim','jin','sabra','wije'];}
+ else if(t==='Low-intermediate'){v100='sup';t100='Commonly used, but 30 mCi has better randomized support.';
+  b100=['There is no randomized evidence that 100 outperforms 30 in this tier, and HiLo suggests it does not. Choosing 100 here is a defensible clinical preference; it is not the evidence-favored option, and a standard should record which it is.'];c100=['hilo','est1','ata25'];}
+ else {v100='no';t100='More activity than any trial supports at low risk.';
+  b100=['ESTIMABL1 and HiLo established 30 as equivalent, and IoN and ESTIMABL2 question treating at all. There is no evidentiary route to 100 mCi in this tier.'];c100=['ion','est2','hilo'];}
+ R.push([100,'100 mCi',v100,t100,b100,c100,[]]);
+
+ let v150,t150,b150,c150;
+ if(adv&&S.pat!=='diff'){v150='rec';t150='Guideline-supported for known structural or distant disease.';
+  b150=['ATA recommendation 77 permits empiric activity up to 200 mCi for known structural disease, and SNMMI/EANM state that 100 mCi or less is not recommended for this indication.',
+   'Dosimetry is preferable to a larger empiric number where available. In 87 patients with distant metastases or locoregionally advanced disease, dosimetry-guided prescribing achieved better complete response rates than empiric prescribing.',
+   'Response is not uniform across sites. In the reference series of 444 patients with distant disease, complete response concentrated in younger patients with small-volume iodine-avid pulmonary metastases; bone metastases achieved complete response in under a third of non-refractory patients, and FDG avidity within a lesion predicted both non-response and poor survival.'];
+  c150=['ata15','snmmi','klubo','durante','bone','lung'];}
+ else if(t==='High'&&S.age>=55&&(S.ete==='major'||S.ete==='strap')&&S.node!=='n0'){
+  v150='sup';t150='One documented exception applies to this patient.';
+  b150=['The general finding is that 150 does not outperform 100 in locoregional disease — two propensity-matched cohorts totalling nearly 1,900 patients and a 181-patient N1b series all point the same way.',
+   'One exception is documented: 150 to 260 mCi may improve initial response in older patients with Stage IVa disease, weighed against toxicity in a group that already does poorly. At '+S.age+' with T3b or T4 extension and nodal disease, this patient sits inside that exception.',
+   'This is grade C evidence and should be presented as such — a documented carve-out to discuss, not a position to insist on.'];c150=['sabra','kim','jin'];}
+ else if(t==='High'||t==='Intermediate-high'){v150='no';t150='Not supported — the larger series show no benefit.';
+  b150=['A propensity-matched cohort of 1,448 patients found no disease-free survival difference with recurrence numerically higher at 150; a 436-patient N1b series found no difference; a third found none between roughly 108 and 162 mCi.',
+   'The single study supporting 150 here matched 66 pairs across two countries, in which patients in one were dosed lower by national policy — so treatment allocation tracked geography and propensity matching cannot remove that. It should be cited for completeness and not relied on.'];c150=['kim','jin','wije','gray'];}
+ else {v150='no';t150='Far above what this tier supports.';b150=['No evidence supports this activity outside high-risk or structurally persistent disease.'];c150=['hilo','ata25'];}
+ R.push([150,'150 mCi',v150,t150,b150,c150,[]]);
+
+ R.push([200,'200 mCi',(adv&&S.pat!=='diff')?'sup':'no',
+  (adv&&S.pat!=='diff')?'The upper bound of empiric dosing, if dosimetry is unavailable.':'Reserved for known structural disease.',
+  (adv&&S.pat!=='diff')
+   ?['ATA recommendation 77 sets 200 mCi as the empiric ceiling for known structural disease, capped at 150 mCi from age 70.',
+     'At this level the second-malignancy signal becomes material — cumulative activity above roughly 150 mCi carries an adjusted hazard ratio near 1.30. If 200 mCi is under consideration, that is the point at which dosimetry stops being optional in practical terms.']
+   :['Empiric activity at this level is reserved for known structural or distant disease. Nothing supports it as adjuvant therapy.'],
+  (adv&&S.pat!=='diff')?['ata15','spm','klubo']:['ata15','kim'],[]]);
+
+ const needD = adv||S.cum>=600||S.ren==='esrd'||S.ren==='low'||S.pat==='diff'||(S.up!==null&&S.up>=10)||S.rai_r||cytopenia;
+ R.push(['DOS','Dosimetry-guided',needD?'rec':'no',
+  needD?'Indicated — an empiric number here is a guess in both directions.':'Not required for straightforward adjuvant treatment.',
+  needD?[(cytopenia?'The prescribing information asks for dosimetry directly where baseline counts are low, targeting marrow dose below 2 Gy. ':'')+'SNMMI and EANM ask for dosimetry or referral for dosimetry in advanced disease, for two reasons: to identify patients who would be harmed by 150–200 mCi, and to deliver the highest safe activity to those who would not.',
+   'In 87 patients with distant metastases or locoregionally advanced disease, dosimetry-guided prescribing produced better complete response rates than empiric prescribing.',
+   'The governing constraints are the Benua–Leeper limits: whole-body retention under 80 mCi at 48 hours with diffuse lung disease, 120 mCi without, and blood dose under 200 cGy. Lesional dose–response work supports a threshold near 85 Gy for lesion response.']
+   :['For adjuvant treatment of locoregional disease with normal renal function and no prior therapy, empiric dosing is standard and dosimetry adds cost without a demonstrated outcome benefit. The 2025 guidelines note that evidence to support routine personalised dosimetry over fixed activities is still lacking.'],
+  needD?(cytopenia?['marrow','snmmi','klubo','benua']:['snmmi','klubo','benua','i124']):['ata25','snmmi'],[]]);
+
+ /* ---- deductive layer ---- */
+ const num=R.filter(r=>typeof r[0]==='number');
+ const lowestCapped=cap===null?null:num.filter(r=>r[0]>cap).sort((a,b)=>a[0]-b[0])[0];
+ R.forEach(r=>{const d=r[0];
+  if(typeof d==='number'&&cap!==null&&d>cap){
+   r[2]='ceil';r[3]='Above the physiologic ceiling of '+cap+' mCi for this patient.';
+   r[6].push(lowestCapped&&d>lowestCapped[0]
+    ?'No study rules this activity out. It is excluded by arithmetic: the ceiling that rules out '+lowestCapped[0]+' mCi necessarily rules out anything above it. Stating this matters, because a ladder that marks one rung excluded and leaves a higher rung merely unsupported reads as though the two were assessed independently.'
+    :'This exclusion comes from the physiologic ceiling above, not from any trial of this activity. The literature on '+d+' mCi is unchanged; it simply does not apply to a patient who cannot clear it safely.');}});
+ if(cap!==null&&num.every(r=>r[0]>cap))
+  R[R.length-1][6].push('Every fixed activity on this ladder now exceeds the ceiling. That makes dosimetry not one option among several but the only remaining route — a conclusion that follows from the constraints rather than from any comparative study.');
+ if(adv&&cap!==null&&cap<150)
+  R[R.length-1][6].push('This case contains a genuine collision. The disease requires an activity that guidelines put above 100 mCi, and a physiologic constraint caps the patient below that. Both statements are separately well supported and cannot both be satisfied by a single empiric number. That is not a reason to split the difference — it is the situation dosimetry exists to resolve.');
+ if(!adv&&lowRisk) R[2][6].push('Chaining the randomized trials gives a conclusion none states directly. Omission is non-inferior to 30 mCi, and 30 is non-inferior to 100. If both hold, 100 mCi carries the toxicity of the highest tested activity while the lowest tested option performs the same. This is a transitive inference across trials in overlapping but not identical populations, so it is weaker than either alone.');
+ if(adv) R[1][6].push('No trial has tested 30 mCi against distant or residual disease, so nothing formally excludes it. It is excluded a fortiori: if guidelines state that 100 mCi is not recommended for this indication, an activity a third of that size cannot be adequate.');
+ if(S.age<19) R.forEach(r=>{if(typeof r[0]==='number'&&r[0]>0)r[6].push('This rung derives entirely from adult trials. Applied to a patient of '+S.age+', the number is an extrapolation with a scaling factor attached, not a tested activity, and the direction of any error is unknown.');});
+ if(S.age<=30&&(S.cum>=150||adv)) R.filter(r=>typeof r[0]==='number'&&r[0]>=100).forEach(r=>r[6].push('The second-malignancy hazard associated with cumulative activity is usually quoted as a single figure, but it is not the same figure at every age. A patient of '+S.age+' has five or six decades for a radiation-induced malignancy to declare itself; a patient of seventy-five frequently does not. The published hazard ratio is not age-stratified, so this is reasoning applied to it rather than a finding within it.'));
+ if(S.age>=75&&(t==='Low'||t==='Low-intermediate')) R.filter(r=>typeof r[0]==='number'&&r[0]>0).forEach(r=>r[6].push('At '+S.age+' in this tier, competing mortality dominates. Low-risk differentiated carcinoma has a recurrence rate in single figures and a disease-specific mortality far below that, over a horizon this patient may not have. No trial randomizes by life expectancy.'));
+ if(S.up!==null&&S.up>0&&S.up<10) R.filter(r=>typeof r[0]==='number'&&r[0]>0&&r[0]<=30).forEach(r=>r[6].push('Uptake of '+S.up+'% is below the threshold that forces staging but is not nothing. At a low administered activity a measurable remnant absorbs a meaningful fraction of what is given, so 30 mCi here delivers less to residual tumor than the same figure would in a clean bed. The trials report administered activity, not what reached the target.'));
+ if(S.rai_r&&!S.redif) R[R.length-1][6].push('Before accepting that this disease cannot be treated with iodine, the question is whether it has been asked properly. Genotype-guided redifferentiation restores uptake in roughly a third of refractory patients overall, and in the selumetinib series every NRAS-mutant patient responded. Declaring refractoriness without attempting it closes a door that may not be locked.');
+ if(S.mol==='ras'&&S.rai_r) R.filter(r=>typeof r[0]==='number'&&r[0]>=100).forEach(r=>r[6].push('RAS mutation with documented refractoriness is the most favorable redifferentiation profile in the literature. Another empiric activity before attempting it forgoes the option with the strongest genotype-specific evidence behind it.'));
+ if(S.dist==='m1'&&S.age<=25) R.filter(r=>typeof r[0]==='number'&&r[0]>=100).forEach(r=>r[6].push('Young patients with iodine-avid pulmonary metastases have the best outcomes in metastatic disease and are also the group most likely to receive repeated administrations over a lifetime. Both point the same way: get the dosimetry right at the start rather than accumulating activity empirically.'));
+ if(S.surg==='lobe') R.filter(r=>typeof r[0]==='number'&&r[0]>0).forEach(r=>r[6].push('Every activity on this ladder was studied after total or near-total thyroidectomy. Applied after lobectomy the same number is doing a different job against a far larger volume of normal tissue, and the reported ablation success rates do not transfer.'));
+
+ if(STOP) R.forEach(r=>{
+  if(r[0]===0){r[2]='rec';r[3]='Defer treatment — this is the correct action today.';
+   r[4]=['Radioiodine is not withheld because the disease does not warrant it. It is withheld because '+STOP+' makes today the wrong day. The oncologic indication is unchanged and should be revisited once the barrier clears.'];
+   r[6]=['Every rung below is contraindicated by the same single fact, not by anything about the tumor. The useful sentence when presenting is the one that names the interval — when the patient becomes treatable — rather than the one that names an activity.'];}
+  else if(typeof r[0]==='number'){r[2]='con';r[3]='Contraindicated by '+STOP+', irrespective of disease.';
+   r[6]=['This exclusion has nothing to do with risk tier, tumor biology or any comparative trial. It would apply identically to a patient with no disease at all.'];}
+  else {r[2]='no';r[3]='Not applicable until treatment can proceed.';r[6]=[];}
+ });
+
+ /* ---- context notes ---- */
+ if(S.dx==='ftc') N.push(['Follicular-pattern tumors are risk-assessed differently',
+  'Under WHO 2022, adopted by ATA 2025, invasive encapsulated follicular variant of papillary carcinoma is grouped with follicular carcinoma because it behaves like it. Nodal metastases are uncommon in this family, so criteria are modified and vascular invasion carries the weight that node count carries in papillary carcinoma. If the tumor is oncocytic, expect poor iodine avidity — roughly one metastasis in ten concentrates iodine against about three in four for follicular carcinoma. Confirm avidity before committing to a therapeutic activity.','who','onco']);
+ if(S.dx==='aggr') N.push(['Aggressive papillary subtype',
+  'Tall cell, hobnail, columnar and solid subtypes place the patient at intermediate-high risk or above. The subtype determines which tier the patient occupies; it does not by itself justify exceeding the activity appropriate to that tier.','ata25','kim']);
+ if(S.dx==='hg') N.push(['High-grade and poorly differentiated carcinoma',
+  'WHO 2022 separates differentiated high-grade carcinoma from poorly differentiated carcinoma, and the 2025 guidelines flag both as areas where radioiodine effectiveness is genuinely uncertain. High MAPK pathway output tracks with loss of iodine avidity. Confirming that the disease concentrates iodine is worth more here than any choice of empiric activity.','who','rair']);
+ if(S.ete==='micro'||S.multi||S.res==='r1') N.push(['Newly weighted features in the 2025 system',
+  'Multifocality and margin status — anterior versus posterior, R0 versus R1 — are risk features in the 2025 guidelines where they were not before. Commentary notes this will tend to increase radioiodine use rather than decrease it, which is worth stating out loud since the overall direction of the guideline is de-escalation.','ata25']);
+ if(S.node==='micro') N.push(['Micrometastases below 0.2 cm',
+  'Five or fewer nodal micrometastases keep the patient in the lower tiers. This is the population where IoN allowed N1a entry, though in numbers too small for a powered subgroup — so omission is discussable here but not established.','ion','ata25']);
+ if(S.node==='mod'||S.node==='big') N.push(['Nodal burden predicts recurrence but not the activity needed',
+  'In the largest matched series, nodal ratio above 0.22 carried a hazard ratio of 2.92 for recurrence — but administered activity did not change outcomes at any burden. Nodal disease tells you the recurrence risk; it does not tell you to give more iodine.','kim','sabra']);
+ if(S.node==='mod'&&S.node!=='big') N.push(['Node count and node volume are not the same thing',
+  'This tier is assigned on the presence of clinical nodal disease, but a patient with ten nodes all under a centimetre and a patient with three nodes at two-and-a-half centimetres sit in the same box here and do not obviously belong there. The 2025 four-tier system subdivides precisely to address that, and the boundary between low-intermediate and intermediate-high is the part of the classification implemented here with least certainty.',
+  'The published finding that bears on it is nodal ratio: above 0.22 carried a hazard ratio of 2.92 for recurrence. Ratio captures burden better than count does. It still predicts recurrence rather than the activity required.',
+  'Where the count is high but every deposit is small, verify the tier against the criteria tables rather than accepting this assignment.',['ata25','kim']]);
+ if(S.node==='n0'&&S.dist!=='m1') N.push(['Nx is not N0',
+  'Unsuspected nodal metastases were found in 24–38% of patients labelled pN0 or pNx once a diagnostic scan was performed. If nodes were never sampled, the missing datum is better replaced with a different measurement — thyroglobulin, or the scan itself — than with an assumption.','avram13','theran']);
+ if(S.vi!=='none') N.push([S.vi==='ext'?'Extensive angioinvasion (≥4 foci)':'Focal vascular invasion (1–3 foci)',
+  S.vi==='ext'?'Four or more foci separates the high-risk follicular-pattern group and marks a hematogenous phenotype. Where nodal disease points to a route surgery has already addressed, extensive angioinvasion points to one it has not — screening imaging for distant disease is the higher-yield next step, ahead of any decision about activity.'
+   :'One to three foci places the patient in a lower-intermediate band in follicular-pattern tumors and is a modifying rather than determining feature.','who','onco']);
+ if(S.dist==='indet') N.push(['Indeterminate findings are a characterization problem, not a dosing problem',
+  'Nothing in the evidence supports escalating empiric activity for unproven nodules — and this input does not change the recommended activity, only the reasoning around it. The productive responses are to characterize the finding, or to treat at tier-appropriate activity and use the post-therapy scan as the staging study, which is a documented indication in its own right.','theran','snmmi','avram15']);
+ if(S.dist==='m1'&&S.pat==='macro') N.push(['Discrete pulmonary metastases carry the best outcomes in metastatic disease',
+  'In the reference series of 444 patients with distant disease, complete response concentrated in younger patients with small-volume iodine-avid pulmonary metastases. Nodule size, iodine concentration and absence of extrapulmonary disease all predicted response; overall survival was 72% at five years and 55% at ten.','durante','lung']);
+ if(S.dist==='m1'&&S.pat==='na') N.push(['Non-pulmonary distant disease responds less well',
+  'Bone metastases are frequently refractory: in 178 patients across two referral centers only 31.7% of non-refractory patients achieved complete response, and FDG avidity within a metastasis predicted both non-response and poor survival. Lesional dose–response work supports a threshold near 85 Gy, which standard empiric activities often fail to reach in bone. FDG PET before committing to repeated radioiodine is well supported.','bone','i124','durante']);
+ if(S.dist==='m1'&&S.T==='small'&&S.node==='n0') N.push(['Small primary with a single distant deposit',
+  'A minimally invasive node-negative primary with one biopsy-proven distant lesion is a different clinical object from bulky metastatic disease, particularly where directed local therapy has already been given to that lesion. Guideline language on escalation does not distinguish the two, and this tool follows the guideline.',
+  'What the outcome data suggest is that response concentrates in small-volume iodine-avid disease, so this patient may be among the better responders — an argument for confirming avidity and considering lesional dosimetry rather than for any particular empiric number.',['durante','i124','snmmi']]);
+ if(S.age>=65&&S.dist==='m1') N.push(['Age and metastatic disease',
+  'In patients 65 and above with distant metastases, 61% were classified refractory and ten-year overall survival was 30.5%. Loss of iodine avidity, not administered activity, was the dominant prognostic factor. Confirming avidity matters more here than choosing between 150 and 200.','elderly','durante']);
+ if(!S.tgab&&S.tg!==null&&S.tg>=3&&S.dist!=='m1'){
+  const above = S.tg>=117.5;
+  N.push(['Thyroglobulin '+S.tg+' — what this value does and does not establish',
+   'Two different thresholds get conflated here, and the gap between them is wide. A stimulated Tg at or above 10 ng/mL is a <b>prognostic</b> threshold — it predicts worse recurrence-free survival and is what ATA recommendation 77 uses to support empiric treatment of occult disease. The threshold that actually <b>discriminates for pulmonary metastasis</b> is roughly ten times higher: 117.5 ng/mL, with sensitivity 70.2% and specificity 71.7%. A separate series proposed 52.75 ng/mL.'
+   +(above?'<br><br>At '+S.tg+' ng/mL this patient is above the published pulmonary cutoff, so the concern is evidentially grounded. Cross-sectional imaging or a diagnostic scan will settle it, and the answer changes both the activity and whether dosimetry is indicated.'
+          :'<br><br>At '+S.tg+' ng/mL this patient is <b>below</b> the 117.5 ng/mL pulmonary cutoff. That does not exclude lung metastasis — sensitivity is only 70%, so roughly three in ten are missed — but it does mean this value is not by itself evidence of distant disease, and it should not be presented as though it were.')
+   +'<br><br>The stronger direction is the negative one. Negative predictive value at that cutoff is 93.7%, so a low thyroglobulin is good evidence <i>against</i> distant disease — which makes Tg a better de-escalation argument than an escalation one. Where the trajectory is available, doubling time outperforms the absolute value for predicting FDG-avid disease: specificity 93.9% against 78.8%.',
+   'One trap is worth naming. Micronodular pulmonary metastasis carries the <b>lowest</b> Tg of any distant-disease subgroup, median 117.7 ng/mL against 333.0 for macronodular. So the pattern least likely to be flagged by a high Tg is also the pattern that must not receive a larger activity, because diffuse iodine-avid lung disease is capped by whole-body retention rather than by tumor burden.',
+   ['tgdm','tgdm2','tgpat','tgdt','ata15','benua']]);
+ }
+ if(S.tgab) N.push(['TgAb positive — the thyroglobulin is uninterpretable',
+  'Antibody interference invalidates the assay, so a low Tg is neither reassuring nor alarming. The 2025 guidelines shift emphasis to the temporal trend in TgAb rather than absolute values. Two consequences: do not let a suppressed Tg argue down, and note that compromised biochemical surveillance strengthens the case for a post-therapy scan.','tgab','theran']);
+ if(S.rai_r) N.push(['Refractory is no longer necessarily permanent',
+  'The conventional definition — no uptake at known sites, growth despite I-131 with confirmed uptake, growth within a year, or cumulative activity above 600 mCi with persistent disease — predates redifferentiation. A 2024 commentary argues explicitly that it needs revising. Before accepting refractoriness as final, the question is whether genotype-guided redifferentiation has been tried.','rairdef','itog','erriti']);
+ if(S.redif) N.push(['After redifferentiation the activity comes from the lesion',
+  'Redifferentiation restores uptake in roughly a third to two-thirds of refractory patients depending on genotype and agent: 60% with selumetinib, 35% in the genotype-guided protocol, with 38% partial response and 52% stable disease in the BRAF-mutant phase II. Every protocol pairs it with I-124 or I-123 confirmation and dosimetry-guided therapy, never a fixed activity — restoring uptake and then giving an empiric number discards the information the redifferentiation was performed to obtain.','ho13','erriti','leboul23','klubo']);
+ if(S.mol!=='unk'){
+  const mtxt={braf:['BRAF V600E — relevant to refractoriness, not to activity','BRAF V600E associates with reduced sodium-iodide symporter expression and a higher likelihood of losing iodine avidity. It does not indicate more activity; it indicates confirming there is uptake to treat. If disease is already refractory, BRAF-mutant tumors redifferentiate least well with MEK inhibition alone.',['erriti','ho13','rair']],
+   ras:['RAS family — the genotype that redifferentiates best','In the selumetinib trial every NRAS-mutant patient recovered radioiodine uptake, against 1 of 9 BRAF-mutant patients reaching the dosimetry threshold. If this disease becomes refractory, RAS mutation is the most favorable predictor that redifferentiation will work — worth recording now so that it is known later.',['ho13','itog']],
+   fusion:['Fusion-driven disease','RET and NTRK fusions define a group with effective targeted options. The interaction between selective inhibitors and iodine avidity is less well characterized than for MAPK inhibitors; the practical point is that these patients have a route that does not depend on getting the activity right.',['itog','rair']],
+   tert:['TERT promoter co-mutation','TERT co-mutation with BRAF or RAS marks the most aggressive differentiated phenotype and correlates with loss of iodine avidity and poor outcome. Its value is prognostic and predictive of refractoriness — a reason to confirm uptake before treating, not to escalate.',['rair','rairdef']]}[S.mol];
+  N.push(mtxt);
+ }
+ N.push(['The post-therapy scan is a staging study, not a formality',
+  'Whatever activity is chosen, the imaging that follows carries information nothing else in the workup provides. Post-therapy scintigraphy revealed iodine-avid foci outside the thyroid bed that pre-therapy I-123 scanning had missed in 18% of patients, producing upstaging in 10%. Adding SPECT/CT to planar imaging gained nodal stage information in 35% and changed risk stratification in 25%.',
+  'It also changes what is given. In one series diagnostic SPECT/CT altered the proposed therapeutic activity in 58% of patients — in both directions. Reporting the scan as a restratification rather than a description of physiologic uptake is where most of that value is realised or lost.',
+  ['ptscan','spectct','ajr10','avram15']]);
+ N.push(['Preparation is not a dosing variable — settle it separately',
+  'Meta-analyzes of six to seven randomized trials totalling roughly 1,500 patients found equivalent ablation success for rhTSH and withdrawal (RR 0.97), with markedly better quality of life and lower whole-body exposure on rhTSH. Choose preparation on tolerability and logistics.',
+  'Adequacy is measurable and worth measuring before blaming the activity. The TSH threshold of 30 mIU/L is convention with modest evidential support and may not be required at low and intermediate risk. Urinary iodine after two weeks of restriction was 72.4 with rhTSH against 29.9 with withdrawal; contrast media and medications must be actively excluded rather than assumed absent.',
+  ['rhtsh','prep','tsh30','lid']]);
+
+
+ // A recommendation with a named contingency, where something measurable is still outstanding.
+ let cond=null;
+ if(!STOP){
+  if(!adv && S.dist==='indet')
+   cond={t:'the indeterminate finding is characterized as metastatic — biopsy, dedicated imaging, or uptake outside the thyroid bed on the post-therapy scan',
+         to:150, why:'Unproven nodules do not justify a larger empiric activity today, but they are the one finding that would change the tier. Diagnostic SPECT/CT altered the proposed therapeutic activity in 58% of patients in one series and changed management in 31% in another, so the imaging about to be performed is not a formality.', c:['ajr10','avram15','snmmi']};
+  else if(!adv && S.tgab)
+   cond={t:'the post-therapy scan shows uptake outside the thyroid bed',
+         to:null, why:'With thyroglobulin uninterpretable there is no biochemical surveillance datum, so the scan is the only staging information this treatment will generate. Post-therapy imaging revealed avid foci missed on pre-therapy scanning in 18% of patients, upstaging 10%.', c:['tgab','ptscan','theran']};
+  else if(!adv && !S.tgab && S.tg===null && (t==='High'||t==='Intermediate-high'))
+   cond={t:'stimulated thyroglobulin returns at or above 10 ng/mL with negative imaging',
+         to:150, why:'ATA 2015 supports empiric 100–200 mCi at that threshold on the reasoning of occult disease below the resolution of anatomic imaging. Post-treatment Tg above 10 was also the strongest recurrence predictor in the largest matched cohort.', c:['ata15','kim']};
+  else if(adv && S.pat==='macro')
+   cond={t:'lesional dosimetry returns an absorbed dose below the response threshold',
+         to:null, why:'Dose–response work supports roughly 85 Gy for lesion response, which standard empiric activities frequently fail to reach — particularly in bone, where complete response occurred in under a third of non-refractory patients.', c:['i124','bone','klubo']};
+ }
+
+
+ // Where two defensible readings of the evidence give different activities.
+ if(!STOP&&!adv){
+  const R30=R.find(x=>x[0]===30), R100=R.find(x=>x[0]===100), R0=R.find(x=>x[0]===0);
+  if(t==='Intermediate-high'&&R30&&R100&&R30[2]!=='ceil'&&R100[2]!=='ceil'){
+   R100[2]='rec'; R30[2]='alt';
+   tension={a:'100 mCi',b:'30 mCi',
+    why:'Both readings rest on randomized evidence and they point in opposite directions. HiLo enrolled intermediate-risk patients alongside low-risk ones and found 1.1 GBq non-inferior to 3.7 GBq, with fewer adverse events and shorter isolation. Against that, a meta-analysis of 17 randomized trials in 3,737 patients found an 11% higher ablation success rate at 3.7 GBq, and a three-arm randomized comparison found a second course needed in 22% at 30 mCi against 11% at 100.',
+    take:'The higher activity is shown as recommended because the direct comparison of the two activities favors it for ablation success, and because SNMMI and EANM lean toward broader use at intermediate risk. Thirty is genuinely appropriate here and not a compromise — it is the choice that accepts a higher retreatment rate in exchange for less toxicity and a shorter admission. Either is defensible; what is not defensible is choosing without saying which trade was made.',
+    c:['metapos','hilo','polish','snmmi']};
+  }
+  else if(t==='Low-intermediate'&&R30&&R100&&R30[2]!=='ceil'&&R100[2]!=='ceil'){
+   R30[2]='rec'; R100[2]='alt';
+   tension={a:'30 mCi',b:'100 mCi',
+    why:'Two randomized trials establish 1.1 GBq as equivalent to 3.7 GBq for ablation in this population, sustained at five years, with fewer adverse events. No randomized evidence shows 100 outperforming 30 in this tier.',
+    take:'Thirty is the evidence-favored option. One hundred remains appropriate — it is what most centers do, it carries a lower retreatment rate, and the 2025 guidelines describe this tier as individualised rather than prescriptive. But the direction of the evidence is clear, and choosing 100 here is a clinical preference rather than an evidence-led decision. Recording which it is costs nothing.',
+    c:['est1','hilo','metapos','ata25','eta']};
+  }
+  else if(t==='Low'&&R0&&R30&&R30[2]!=='ceil'){
+   R0[2]='rec'; R30[2]='alt';
+   tension={a:'No radioiodine',b:'30 mCi',
+    why:'IoN and ESTIMABL2 each randomized patients of this profile to ablation or observation and found no difference in recurrence at five years — two independent multicenter trials reaching the same conclusion.',
+    take:'Omission is the evidence-favored option and the 2025 guidelines discourage routine treatment here. Thirty remains appropriate where the indication is staging rather than ablation: post-therapy imaging upstages a small but real proportion of patients with negative ultrasound and low thyroglobulin. That is a different indication and should be stated as one, because it justifies the low activity and not the high one.',
+    c:['ion','est2','theran','ata25']};
+  }
+  else if(t==='High'&&S.age>=55&&(S.ete==='major'||S.ete==='strap')&&S.node!=='n0'){
+   const R150=R.find(x=>x[0]===150);
+   if(R150&&R150[2]!=='ceil'){ R150[2]='alt';
+    tension={a:'100 mCi',b:'150 mCi',
+     why:'Two propensity-matched cohorts totalling nearly 1,900 patients found no benefit from exceeding 100 mCi in locoregional disease, with recurrence numerically higher at 150 in the larger one. A 181-patient N1b series reached the same conclusion — except in older patients with Stage IVa disease, where 150 to 260 mCi may improve initial response.',
+     take:'One hundred is the evidence-favored option on volume and consistency. This patient sits inside the one documented exception, so 150 is appropriate and worth raising — but the exception rests on a single small retrospective series, and it should be presented as a carve-out to discuss rather than a position to insist on. Spend it here and not on the next case.',
+     c:['kim','jin','sabra','wije']};
+   }
+  }
+ }
+
+ /* ---- headline ---- */
+ const rec=R.filter(r=>r[2]==='rec');
+ const alt=R.filter(r=>r[2]==='alt');
+ const pick=rec.find(r=>typeof r[0]==='number')||rec[0]||R.find(r=>r[2]==='sup')||R[2];
+ let band='';
+ if(cap!==null)band='ceiling '+cap+' mCi';
+ if(rec.some(r=>r[0]==='DOS'))band=band?band+' · dosimetry indicated':'dosimetry indicated';
+ head={dose:pick?(pick[0]===0?'No radioiodine':pick[0]==='DOS'?'Dosimetry':pick[0]+' mCi'):'—',
+  band,what:TIERTXT[t]||'',cond};
+ return {H,N,R,cap,STOP,head,t,ALT:null,cond,tension};
+}
+
+/* ============================ RELEVANCE ============================ */
+function sig(){const o=build();return o.head.dose+'|'+o.R.map(r=>r[0]+':'+r[2]).join(',')+'|'+o.H.length;}
+function matters(k,opts){
+ const cur=S[k],now=sig();let d=false;
+ for(const v of opts){S[k]=v;if(sig()!==now){d=true;break}}
+ S[k]=cur;return d;
+}
+
+/* ============================ RENDER ============================ */
+const $=id=>document.getElementById(id);
+function renderInputs(){
+ let html='',hidden=0;
+ FIELDS.forEach(f=>{
+  if(f.show&&!f.show()){return}
+  const vals=f.opts.map(o=>o[0]);
+  if(!f.always&&!showAll&&!matters(f.k,vals)&&S[f.k]===DEF[f.k]){hidden++;return}
+  html+='<div class="g"><label>'+f.label+'</label><div class="'+f.type+'" data-k="'+f.k+'">'
+   +f.opts.map(o=>'<button data-v="'+o[0]+'" aria-pressed="'+(S[f.k]===o[0])+'">'+o[1]+'</button>').join('')
+   +'</div></div>';
+ });
+ if(isDTC()){
+  html+='<div class="g"><div class="nm">'
+   +'<div><label>Age</label><input type="number" data-k="age" value="'+S.age+'"></div>'
+   +'<div><label>Prior mCi</label><input type="number" data-k="cum" value="'+S.cum+'" step="10"></div>'
+   +'<div><label>Remnant %</label><input type="number" data-k="up" value="'+(S.up??'')+'" step="0.1" placeholder="—"></div>'
+   +'<div><label>Tg ng/mL</label><input type="number" data-k="tg" value="'+(S.tg??'')+'" step="0.1" placeholder="—"></div>'
+   +'<div><label>ANC ×10⁹/L</label><input type="number" data-k="anc" value="'+(S.anc??'')+'" step="0.1" placeholder="—"></div>'
+   +'<div><label>Platelets ×10⁹/L</label><input type="number" data-k="plt" value="'+(S.plt??'')+'" step="1" placeholder="—"></div>'
+   +(S.age<19?'<div><label>Weight kg</label><input type="number" data-k="wt" value="'+(S.wt??'')+'" placeholder="—"></div>':'')
+   +'</div></div>';
+  html+='<div class="g"><label>Molecular profile <span style="text-transform:none;letter-spacing:0;font-weight:400;color:var(--faint)">— context only</span></label>'
+   +'<div class="stk" data-k="mol">'
+   +[['unk','Not tested'],['braf','BRAF V600E'],['ras','RAS family'],['fusion','RET / NTRK fusion'],['tert','TERT co-mutation']]
+     .map(o=>'<button data-v="'+o[0]+'" aria-pressed="'+(S.mol===o[0])+'">'+o[1]+'</button>').join('')+'</div></div>';
+  let tg='';TOGGLES.forEach(t=>{if(t.show&&!t.show())return;
+   tg+='<label class="tg"><input type="checkbox" data-k="'+t.k+'"'+(S[t.k]?' checked':'')+'> '+t.label+'</label>';});
+  if(tg)html+='<div class="g"><label>Other</label>'+tg+'</div>';
+ }
+ if(isBen()){
+  html+='<div class="g"><div class="nm">'
+   +'<div><label>Age</label><input type="number" data-k="age" value="'+S.age+'"></div>'
+   +'<div><label>Gland vol mL</label><input type="number" data-k="vol" value="'+(S.vol??'')+'" placeholder="—"></div>'
+   +'<div><label>24h uptake %</label><input type="number" data-k="raiu" value="'+(S.raiu??'')+'" placeholder="—"></div>'
+   +'</div></div>';
+ }
+ $('inputs').innerHTML=html;
+ $('hiddenNote').innerHTML = hidden
+  ? '<div class="hidden-note">'+hidden+' field'+(hidden>1?'s are':' is')+' hidden because changing '+(hidden>1?'them':'it')+' would not alter the recommendation here. <button id="tgAll">'+(showAll?'Hide again':'Show all fields')+'</button></div>'
+  : (showAll?'<div class="hidden-note">All fields shown. <button id="tgAll">Hide irrelevant</button></div>':'');
+ wire();
+}
+
+function split(a){
+ const last=a[a.length-1];
+ if(Array.isArray(last))return{texts:a.slice(1,-1),cites:last};
+ let i=a.length-1,cites=[];
+ while(i>0&&typeof a[i]==='string'&&REF[a[i]]){cites.unshift(a[i]);i--;}
+ return{texts:a.slice(1,i+1),cites};
+}
+function block(a,cls){const{texts,cites}=split(a);
+ return '<div class="blk '+cls+'"><b>'+a[0]+'</b>'+
+ texts.map(x=>'<p>'+x+'</p>').join('')+
+ '<div class="cites">'+cites.map(k=>
+ '<div class="ct"><span class="gr g'+REF[k][0]+'">'+REF[k][0]+'</span><span>'+REF[k][1]+'</span></div>').join('')+'</div></div>';}
+
+function render(){
+ const o=build();
+ const L={rec:'Recommended',sup:'Supported',no:'Not supported',con:'Contraindicated',ceil:'Above ceiling'};
+ const CL={rec:'c-rec',sup:'c-sup',no:'c-no',con:'c-con',ceil:'c-ceil'};
+
+ $('route').innerHTML = o.t
+  ? '<div class="card tierbar"><div><div class="lb">Risk tier</div><div class="vl">'+o.t+'</div></div><div class="dv">'+o.head.what+'</div></div>'
+  : '<div class="card tierbar"><div><div class="lb">Route</div><div class="vl">'+o.head.dose+'</div></div><div class="dv">'+o.head.what+'</div></div>';
+
+ let b='';
+ if(o.H.length) b+='<h2>Gates and ceilings — applied before anything else</h2>'
+  +o.H.map(h=>block(h,h[0].match(/absolute|Pregnan|Lactation|contrast within|symporter/i)?'stop':'cap')).join('');
+ if(o.R.length){
+  b+='<h2>The activity ladder — click any rung for the reasoning</h2>';
+  b+=o.R.map((r,i)=>'<div class="rung '+(r[2]==='rec'?'on':r[2]==='alt'?'alt':r[2]==='ceil'?'dim':'')+'" data-i="'+i+'">'
+   +'<div class="rh"><div class="rd">'+String(r[1]).replace(/ mCi/,'<small> mCi</small>')+'</div>'
+   +'<span class="chip '+CL[r[2]]+'">'+L[r[2]]+'</span><div class="rt">'+r[3]+'</div><div class="rx">›</div></div>'
+   +'<div class="rb">'+r[4].map(p=>'<p>'+p+'</p>').join('')
+   +'<div class="cites">'+r[5].map(k=>'<div class="ct"><span class="gr g'+REF[k][0]+'">'+REF[k][0]+'</span><span>'+REF[k][1]+'</span></div>').join('')+'</div>'
+   +(r[6].length?'<div class="infbox"><div class="ih"><span class="gr gI">INFERENCE</span> Reasoning, not a citation — no study states this</div>'+r[6].map(x=>'<p>'+x+'</p>').join('')+'</div>':'')
+   +'</div></div>').join('');
+ }
+ if(o.tension) b+='<h2>Two defensible readings</h2>'
+  +'<div class="blk note" style="border-left:3px solid #215D91">'
+  +'<b>'+o.tension.a+' &nbsp;·&nbsp; and '+o.tension.b+' is also appropriate</b>'
+  +'<p>'+o.tension.why+'</p><p>'+o.tension.take+'</p>'
+  +'<div class="cites">'+o.tension.c.map(k=>'<div class="ct"><span class="gr g'+REF[k][0]+'">'+REF[k][0]+'</span><span>'+REF[k][1]+'</span></div>').join('')+'</div></div>';
+ if(o.cond) b+='<h2>Contingency — the one thing outstanding</h2>'
+  +'<div class="blk note" style="border-left:3px solid var(--ac)"><b>'
+  +(o.cond.to?('Escalate to '+o.cond.to+' mCi only if '):'Revisit the activity if ')+o.cond.t+'</b>'
+  +'<p>'+o.cond.why+'</p><div class="cites">'
+  +o.cond.c.map(k=>'<div class="ct"><span class="gr g'+REF[k][0]+'">'+REF[k][0]+'</span><span>'+REF[k][1]+'</span></div>').join('')
+  +'</div></div>';
+ if(o.N.length) b+='<h2>Applies to this patient</h2>'+o.N.map(n=>block(n,'note')).join('');
+ $('body').innerHTML=b;
+ document.querySelectorAll('.rh').forEach(h=>h.addEventListener('click',()=>h.parentElement.classList.toggle('open')));
+
+ /* ---- summary card ---- */
+ const reasons=[];
+ o.H.forEach(h=>reasons.push([h[0],h.slice(2)]));
+ const rec=o.R.filter(r=>r[2]==='rec');
+ rec.forEach(r=>reasons.push([r[3],r[5].slice(0,2)]));
+ o.N.slice(0,3).forEach(n=>reasons.push([n[0],split(n).cites.slice(0,2)]));
+ const cite=ks=>ks.map(k=>REF[k][1].replace(/<[^>]+>/g,'').split(/[.—]/)[0].trim()).join(' · ');
+ /* ---- pertinent negatives: why not another activity ---- */
+ const recDose = (()=>{const r=o.R.find(x=>x[2]==='rec');return r?(typeof r[0]==='number'?r[0]:(r[0]==='DOS'?120:0)):100;})();
+ const cand = o.R.filter(r=>r[2]!=='rec'&&r[2]!=='sup'&&r[2]!=='alt'&&!(r[0]===0&&o.head.dose==='No radioiodine'));
+ const grp = {};
+ cand.forEach(r=>{(grp[r[3]] = grp[r[3]] || []).push(r);});
+ const negs = Object.values(grp).map(g=>{
+  g.sort((a,b)=>(typeof a[0]==='number'?a[0]:999)-(typeof b[0]==='number'?b[0]:999));
+  const nums = g.filter(r=>typeof r[0]==='number');
+  const label = g.length===1 ? String(g[0][1])
+   : nums.length===g.length ? nums[0][0]+'–'+nums[nums.length-1][0]+' mCi'
+   : g.map(r=>String(r[1]).replace(' mCi','')).join(', ')+' mCi';
+  const best = g[0];
+  let score = best[2]==='ceil' ? 100 : best[2]==='con' ? 80 : 40;
+  const d = typeof best[0]==='number' ? best[0] : (best[0]==='DOS' ? 120 : 0);
+  score -= Math.abs(d-recDose)/10;
+  if(best[0]==='DOS') score -= 15;
+  score += (g.length-1)*4;                       // a reason that excludes several rungs matters more
+  return {label,why:best[3],cites:best[5],score};})
+  .sort((a,b)=>b.score-a.score).slice(0,3);
+ if(o.ALT) o.ALT.forEach(a=>negs.push({label:a[0],why:a[1],cites:a[2]}));
+
+ $('shot').innerHTML='<div class="shot"><div class="shot-h"><span class="t">Proposed I-131 activity</span>'
+  +'<span class="s">'+(o.t?o.t+' risk':'')+'</span></div>'
+  +'<div class="shot-d"><div class="big">'+o.head.dose.replace(/ mCi/,'<small> mCi</small>')+'</div>'
+  +'<div class="ctx">'+(o.head.band?'<b>'+o.head.band+'</b><br>':'')+o.head.what
+  +(o.cond?'<br><br><b style="color:var(--ac)">'+(o.cond.to?'Escalate to '+o.cond.to+' mCi only if ':'Revisit if ')+o.cond.t+'.</b>':'')
+  +'</div></div>'
+  +'<div class="shot-b"><div class="lb">Basis</div><ul>'
+  +reasons.slice(0,5).map(r=>'<li>'+r[0]+'<em>'+cite(r[1])+'</em></li>').join('')
+  +'</ul>'
+  +(negs.length?'<div class="lb">Why not another activity</div><ul class="neg">'
+    +negs.slice(0,3).map(r=>'<li><b>'+r.label+'</b> — '+r.why.replace(/\.$/,'')
+      +'<em>'+cite(r.cites.slice(0,2))+'</em></li>').join('')
+    +'</ul>':'')
+  +'<div class="lb">Evidence grade of the cited basis</div>'
+  +'<div style="font-size:12.5px;color:var(--soft)">'
+  +['A','B','C'].map(g=>{const n=new Set(reasons.flatMap(r=>r[1]).concat(negs.slice(0,3).flatMap(r=>r.cites.slice(0,2))).filter(k=>REF[k][0]===g)).size;
+    return n?'<span class="gr g'+g+'" style="margin-right:6px">'+g+'</span>'+n+' source'+(n>1?'s':'')+'':''})
+   .filter(Boolean).join(' &nbsp;·&nbsp; ')+'</div></div>'
+  +'<div class="shot-f"><span>Evidence-based proposal for discussion. Not a written directive.</span>'
+  +'<span>'+new Date().toISOString().slice(0,10)+'</span></div></div>';
+
+ $('soc').innerHTML=[
+  ['ATA 2025','Ringel, Thyroid 2025','Four risk tiers. Routine radioiodine still discouraged at low risk. Multifocality and margin status newly incorporated, which will tend to increase use.'],
+  ['ETA 2022','Pacini, Eur Thyroid J','Individualised selection. Best fit for the low-intermediate tier, where benefit is genuinely uncertain.'],
+  ['SNMMI / EANM 2022','Avram, J Nucl Med','More liberal indication, especially at intermediate risk. Explicit that 100 mCi or less is not recommended for advanced or metastatic disease. Best fit for intermediate-high.'],
+  ['Why it matters','—','The EANM declined to endorse the 2015 ATA guidelines outright. That disagreement was managed rather than resolved, and the 2025 four-tier split is the structural response. Two clinicians citing different societies on the same patient can both be correct — which is why a standard has to name which it follows.']
+ ].map(s=>'<div class="socrow"><div><b>'+s[0]+'</b><em>'+s[1]+'</em></div><div>'+s[2]+'</div></div>').join('');
+}
+
+function wire(){
+ document.querySelectorAll('[data-k] button').forEach(btn=>btn.addEventListener('click',()=>{
+  const w=btn.closest('[data-k]');S[w.dataset.k]=btn.dataset.v;renderInputs();render();}));
+ document.querySelectorAll('input[type=checkbox][data-k]').forEach(i=>i.addEventListener('change',()=>{
+  S[i.dataset.k]=i.checked;renderInputs();render();}));
+ document.querySelectorAll('input[type=number][data-k]').forEach(i=>i.addEventListener('input',()=>{
+  S[i.dataset.k]=i.value===''?(['age','cum'].includes(i.dataset.k)?DEF[i.dataset.k]:null):parseFloat(i.value);render();}));
+ const t=$('tgAll'); if(t)t.addEventListener('click',()=>{showAll=!showAll;renderInputs();render();});
+}
+$('rst').addEventListener('click',()=>{Object.assign(S,DEF);showAll=false;renderInputs();render();});
+$('copyBtn').addEventListener('click',()=>{
+ const el=document.querySelector('.shot');
+ navigator.clipboard.writeText(el.innerText).then(()=>{
+  const b=$('copyBtn');b.textContent='Copied';setTimeout(()=>b.textContent='Copy text',1400);});
+});
+renderInputs();render();
+</script>
